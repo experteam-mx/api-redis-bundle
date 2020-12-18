@@ -1,5 +1,5 @@
 {
-    "name": "experteam/api-redis",
+    "name": "experteam/api-redis-bundle",
     "description": "REDIS functionality bundle for APIs.",
     "type": "symfony-bundle",
     "license": "MIT",
