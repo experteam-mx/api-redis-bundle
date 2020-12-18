@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<container xmlns="http://symfony.com/schema/dic/services"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://symfony.com/schema/dic/services
+        http://symfony.com/schema/dic/services/services-1.0.xsd">
+    <services>
+        <service id="api_redis.client" class="Experteam\ApiRedisBundle\Service\RedisClient\RedisClient" >
+            <argument key="$predisClient" type="service" id="Predis\Client"/>
+            <argument key="$serializer" type="service" id="Symfony\Component\Serializer\SerializerInterface"/>
+        </service>
+        <service id="Experteam\ApiRedisBundle\Service\RedisClient\RedisClientInterface" alias="api_redis.client" />
+
+        <service id="Experteam\ApiRedisBundle\Repository\EntityWithPostChangeRepository">
+            <argument key="$registry" type="service" id="Doctrine\Persistence\ManagerRegistry"/>
+            <tag name="doctrine.repository_service" />
+        </service>
+
+        <service id="Experteam\ApiRedisBundle\EventSubscriber\PostChangeSubscriber">
+            <argument key="$container" type="service" id="Symfony\Component\DependencyInjection\ContainerInterface"/>
+            <argument key="$redisClient" type="service" id="Experteam\ApiRedisBundle\Service\RedisClient\RedisClientInterface"/>
+            <argument key="$serializer" type="service" id="Symfony\Component\Serializer\SerializerInterface"/>
+            <argument key="$messageBus" type="service" id="Symfony\Component\Messenger\MessageBusInterface"/>
+            <tag name="doctrine.event_subscriber" />
+        </service>
+    </services>
+</container>

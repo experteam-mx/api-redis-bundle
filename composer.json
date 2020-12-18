@@ -1,0 +1,28 @@
+{
+    "name": "experteam/api-redis",
+    "description": "REDIS functionality bundle for APIs.",
+    "type": "symfony-bundle",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Experteam",
+            "email": "info@experteam.com.ec"
+        }
+    ],
+    "require": {
+        "php": "^7.3",
+        "ext-json": "*",
+        "doctrine/orm": "^2.7",
+        "doctrine/doctrine-bundle": "^2.0",
+        "antishov/doctrine-extensions-bundle": "^1.4",
+        "symfony/dependency-injection": "^5.0",
+        "symfony/http-kernel": "^5.0",
+        "symfony/serializer": "^5.0",
+        "predis/predis": "^1.1"
+    },
+    "autoload": {
+        "psr-4": {
+            "Experteam\\ApiRedisBundle\\": "src/"
+        }
+    }
+}
