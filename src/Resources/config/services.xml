@@ -22,5 +22,7 @@
             <argument key="$messageBus" type="service" id="Symfony\Component\Messenger\MessageBusInterface"/>
             <tag name="doctrine.event_subscriber" />
         </service>
+
+        <service id="Predis\Client" alias="snc_redis.default" />
     </services>
 </container>
