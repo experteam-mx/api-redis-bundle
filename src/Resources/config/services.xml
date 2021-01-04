@@ -14,7 +14,7 @@
             <argument key="$container" type="service" id="Symfony\Component\DependencyInjection\ContainerInterface"/>
             <argument key="$redisClient" type="service" id="Experteam\ApiRedisBundle\Service\RedisClient\RedisClientInterface"/>
             <argument key="$serializer" type="service" id="Symfony\Component\Serializer\SerializerInterface"/>
-            <argument key="$messageBus" type="service" id="Symfony\Component\Messenger\MessageBusInterfacee"/>
+            <argument key="$messageBus" type="service" id="Symfony\Component\Messenger\MessageBusInterface"/>
         </service>
         <service id="Experteam\ApiRedisBundle\Service\PostChange\PostChangeInterface" alias="api_redis.post_change" />
 
