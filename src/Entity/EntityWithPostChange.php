@@ -3,11 +3,11 @@
 namespace Experteam\ApiRedisBundle\Entity;
 
 use Experteam\ApiRedisBundle\Repository\EntityWithPostChangeRepository;
-*
 use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Timestampable\Traits\TimestampableEntity;
 
-/**@ORM\Entity(repositoryClass=EntityWithPostChangeRepository::class)
+/**
+ * @ORM\Entity(repositoryClass=EntityWithPostChangeRepository::class)
  */
 class EntityWithPostChange
 {
