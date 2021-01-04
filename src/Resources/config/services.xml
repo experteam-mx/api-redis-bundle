@@ -10,17 +10,17 @@
         </service>
         <service id="Experteam\ApiRedisBundle\Service\RedisClient\RedisClientInterface" alias="api_redis.client" />
 
-        <service id="Experteam\ApiRedisBundle\Repository\EntityWithPostChangeRepository">
-            <argument key="$registry" type="service" id="Doctrine\Persistence\ManagerRegistry"/>
-            <tag name="doctrine.repository_service" />
-        </service>
-
-        <service id="Experteam\ApiRedisBundle\EventSubscriber\PostChangeSubscriber">
+        <service id="api_redis.post_change" class="Experteam\ApiRedisBundle\Service\PostChange\PostChange" >
             <argument key="$container" type="service" id="Symfony\Component\DependencyInjection\ContainerInterface"/>
             <argument key="$redisClient" type="service" id="Experteam\ApiRedisBundle\Service\RedisClient\RedisClientInterface"/>
             <argument key="$serializer" type="service" id="Symfony\Component\Serializer\SerializerInterface"/>
-            <argument key="$messageBus" type="service" id="Symfony\Component\Messenger\MessageBusInterface"/>
-            <tag name="doctrine.event_subscriber" />
+            <argument key="$messageBus" type="service" id="Symfony\Component\Messenger\MessageBusInterfacee"/>
+        </service>
+        <service id="Experteam\ApiRedisBundle\Service\PostChange\PostChangeInterface" alias="api_redis.post_change" />
+
+        <service id="Experteam\ApiRedisBundle\Repository\EntityWithPostChangeRepository">
+            <argument key="$registry" type="service" id="Doctrine\Persistence\ManagerRegistry"/>
+            <tag name="doctrine.repository_service" />
         </service>
 
         <service id="Predis\Client" alias="snc_redis.default" />

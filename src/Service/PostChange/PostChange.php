@@ -1,12 +1,9 @@
 <?php
 
-namespace Experteam\ApiRedisBundle\EventSubscriber;
+namespace Experteam\ApiRedisBundle\Service\PostChange;
 
 use Experteam\ApiRedisBundle\Entity\EntityWithPostChange;
 use Experteam\ApiRedisBundle\Service\RedisClient\RedisClientInterface;
-use Doctrine\Common\EventSubscriber;
-use Doctrine\ORM\Events;
-use Doctrine\Persistence\Event\LifecycleEventArgs;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Serializer\Encoder\JsonEncoder;
@@ -15,7 +12,7 @@ use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
 use Symfony\Component\Serializer\Serializer;
 use Symfony\Component\Serializer\SerializerInterface;
 
-class PostChangeSubscriber implements EventSubscriber
+class PostChange implements PostChangeInterface
 {
     /**
      * @var ContainerInterface
@@ -37,6 +34,13 @@ class PostChangeSubscriber implements EventSubscriber
      */
     private $messageBus;
 
+    /**
+     * PostChange constructor.
+     * @param ContainerInterface $container
+     * @param RedisClientInterface $redisClient
+     * @param SerializerInterface $serializer
+     * @param MessageBusInterface $messageBus
+     */
     public function __construct(ContainerInterface $container, RedisClientInterface $redisClient, SerializerInterface $serializer, MessageBusInterface $messageBus)
     {
         $this->container = $container;
@@ -45,16 +49,10 @@ class PostChangeSubscriber implements EventSubscriber
         $this->messageBus = $messageBus;
     }
 
-    public function getSubscribedEvents()
-    {
-        return [
-            Events::postPersist,
-            Events::postUpdate,
-            Events::postRemove
-        ];
-    }
-
-    private function persist($object)
+    /**
+     * @param $object
+     */
+    public function onPersist($object)
     {
         $entitiesWithPostChange = $this->container->get('doctrine')->getRepository(EntityWithPostChange::class)->findBy(['isActive' => true]);
 
@@ -104,18 +102,34 @@ class PostChangeSubscriber implements EventSubscriber
         }
     }
 
-    public function postPersist(LifecycleEventArgs $args)
+    /**
+     * @param array $entitiesWithPostChange
+     */
+    public function loadEntitiesWithPostChange(array $entitiesWithPostChange)
     {
-        $this->persist($args->getObject());
-    }
+        $manager = $this->container->get('doctrine')->getManager();
+        $entityWithPostChangeRepository = $manager->getRepository(EntityWithPostChange::class);
 
-    public function postUpdate(LifecycleEventArgs $args)
-    {
-        $this->persist($args->getObject());
-    }
+        foreach ($entitiesWithPostChange as $value) {
+            $class = $value['class'];
+            $entityWithPostChange = $entityWithPostChangeRepository->findOneBy(['class' => $class]);
 
-    public function postRemove(LifecycleEventArgs $args)
-    {
-        $this->persist($args->getObject());
+            if (is_null($entityWithPostChange)) {
+                $entityWithPostChange = new EntityWithPostChange();
+                $entityWithPostChange->setClass($class);
+            }
+
+            $entityWithPostChange->setPrefix($value['prefix']);
+            $entityWithPostChange->setToRedis($value['toRedis']);
+            $entityWithPostChange->setDispatchMessage($value['dispatchMessage']);
+
+            if (isset($value['method'])) {
+                $entityWithPostChange->setMethod($value['method']);
+            }
+
+            $manager->persist($entityWithPostChange);
+        }
+
+        $manager->flush();
     }
 }
