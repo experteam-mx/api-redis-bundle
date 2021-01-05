@@ -8,28 +8,8 @@ It includes:
 
 ### Install
 
-1. Configure the repository in the `composer.json` file: <br>
 ```
-...
-
-"repositories": [
-   {
-      "type": "vcs",
-      "url":  "https://github.com/experteam-mx/api-redis-bundle.git"
-   }
-]  
-```
-
-2. Configure the required package in the `composer.json` file: <br>
-```
-"require": {
-   "experteam/api-redis-bundle": "dev-master"
-}
-```
-
-3. Execute the following command: <br>
-```
-composer update experteam/api-redis-bundle
+composer require experteam/api-redis-bundle
 ```
 
 
