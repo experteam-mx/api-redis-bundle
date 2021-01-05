@@ -8,8 +8,16 @@ It includes:
 
 ### Install
 
+1. Configure required package on `composer.json`: <br>
 ```
-composer require experteam/api-redis-bundle
+"require": {
+    "experteam/api-redis-bundle": "dev-master#[commit-hash]"
+}
+```
+
+2. Run the composer command to install or update the package: <br>
+```
+composer update experteam/api-redis-bundle
 ```
 
 
