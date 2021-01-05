@@ -1,6 +1,6 @@
 <?php
 
-namespace Experteam\ApiRedisBundle\Service\PostChange;
+namespace Experteam\ApiRedisBundle\Service\RedisTransport;
 
 use Experteam\ApiRedisBundle\Entity\EntityWithPostChange;
 use Experteam\ApiRedisBundle\Service\RedisClient\RedisClientInterface;
@@ -12,7 +12,7 @@ use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
 use Symfony\Component\Serializer\Serializer;
 use Symfony\Component\Serializer\SerializerInterface;
 
-class PostChange implements PostChangeInterface
+class RedisTransport implements RedisTransportInterface
 {
     /**
      * @var ContainerInterface
@@ -52,51 +52,45 @@ class PostChange implements PostChangeInterface
     /**
      * @param $object
      */
-    public function onPersist($object)
+    public function postChangeEntity($object)
     {
         $entitiesWithPostChange = $this->container->get('doctrine')->getRepository(EntityWithPostChange::class)->findBy(['isActive' => true]);
 
         if (count($entitiesWithPostChange) > 0) {
-            $break = false;
             $appPrefix = $this->container->getParameter('app.prefix');
 
             /** @var EntityWithPostChange $entityWithPostChange */
             foreach ($entitiesWithPostChange as $entityWithPostChange) {
                 $class = $entityWithPostChange->getClass();
 
-                if ($class === str_replace('App\\Entity\\', '', get_class($object))) {
-                    $break = true;
-                    $encoder = new JsonEncoder();
-                    $data = $this->serializer->serialize($object, 'json', ['groups' => 'read']);
+                if ($class !== basename(str_replace('\\', '/', get_class($object))))
+                    break;
 
-                    $defaultContext = [AbstractNormalizer::CIRCULAR_REFERENCE_HANDLER => function ($object) {
-                        $method = 'getId';
-                        return (method_exists($object, $method) ? $object->$method() : null);
-                    }];
+                $data = $this->serializer->serialize($object, 'json', ['groups' => 'read']);
 
-                    $normalizer = new ObjectNormalizer(null, null, null, null, null, null, $defaultContext);
-                    $serializer = new Serializer([$normalizer], [$encoder]);
-                    $serializer->serialize($object, 'json');
+                $defaultContext = [AbstractNormalizer::CIRCULAR_REFERENCE_HANDLER => function ($object) {
+                    $method = 'getId';
+                    return (method_exists($object, $method) ? $object->$method() : null);
+                }];
 
-                    if ($entityWithPostChange->getToRedis()) {
-                        $method = $entityWithPostChange->getMethod();
+                $normalizer = new ObjectNormalizer(null, null, null, null, null, null, $defaultContext);
+                $serializer = new Serializer([$normalizer], [new JsonEncoder()]);
+                $serializer->serialize($object, 'json');
 
-                        if (method_exists($object, $method)) {
-                            $this->redisClient->hset("{$appPrefix}.{$entityWithPostChange->getPrefix()}", $object->$method(), $data, false);
-                        }
-                    }
+                if ($entityWithPostChange->getToRedis()) {
+                    $method = $entityWithPostChange->getMethod();
 
-                    if ($entityWithPostChange->getDispatchMessage()) {
-                        $messageClass = "\App\Message\\{$class}Message";
-
-                        if (class_exists($messageClass)) {
-                            $this->messageBus->dispatch(new $messageClass($data));
-                        }
+                    if (method_exists($object, $method)) {
+                        $this->redisClient->hset("{$appPrefix}.{$entityWithPostChange->getPrefix()}", $object->$method(), $data, false);
                     }
                 }
 
-                if ($break) {
-                    break;
+                if ($entityWithPostChange->getDispatchMessage()) {
+                    $messageClass = "\App\Message\\{$class}Message";
+
+                    if (class_exists($messageClass)) {
+                        $this->messageBus->dispatch(new $messageClass($data));
+                    }
                 }
             }
         }

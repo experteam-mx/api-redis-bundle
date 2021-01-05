@@ -1,13 +1,13 @@
 <?php
 
-namespace Experteam\ApiRedisBundle\Service\PostChange;
+namespace Experteam\ApiRedisBundle\Service\RedisTransport;
 
-interface PostChangeInterface
+interface RedisTransportInterface
 {
     /**
      * @param $object
      */
-    public function onPersist($object);
+    public function postChangeEntity($object);
 
     /**
      * @param array $entitiesWithPostChange

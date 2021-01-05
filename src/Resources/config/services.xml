@@ -10,13 +10,13 @@
         </service>
         <service id="Experteam\ApiRedisBundle\Service\RedisClient\RedisClientInterface" alias="api_redis.client" />
 
-        <service id="api_redis.post_change" class="Experteam\ApiRedisBundle\Service\PostChange\PostChange" >
+        <service id="api_redis.transport" class="Experteam\ApiRedisBundle\Service\RedisTransport\RedisTransport" >
             <argument key="$container" type="service" id="Symfony\Component\DependencyInjection\ContainerInterface"/>
             <argument key="$redisClient" type="service" id="Experteam\ApiRedisBundle\Service\RedisClient\RedisClientInterface"/>
             <argument key="$serializer" type="service" id="Symfony\Component\Serializer\SerializerInterface"/>
             <argument key="$messageBus" type="service" id="Symfony\Component\Messenger\MessageBusInterface"/>
         </service>
-        <service id="Experteam\ApiRedisBundle\Service\PostChange\PostChangeInterface" alias="api_redis.post_change" />
+        <service id="Experteam\ApiRedisBundle\Service\RedisTransport\RedisTransportInterface" alias="api_redis.transport" />
 
         <service id="Experteam\ApiRedisBundle\Repository\EntityWithPostChangeRepository">
             <argument key="$registry" type="service" id="Doctrine\Persistence\ManagerRegistry"/>
