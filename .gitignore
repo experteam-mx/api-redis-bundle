@@ -1,4 +1,10 @@
 /vendor/
 /.idea/
-phpunit.xml
 composer.lock
+/tests/
+phpunit.xml
+.phpunit
+.phpunit.result.cache
+symfony.lock
+.env
+.env.test

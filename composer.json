@@ -20,7 +20,8 @@
         "symfony/http-kernel": "5.1.*",
         "symfony/serializer": "5.1.*",
         "symfony/messenger": "5.1.*",
-        "predis/predis": "^1.1"
+        "predis/predis": "^1.1",
+        "symfony/flex": "^1.11"
     },
     "require-dev": {
         "symfony/phpunit-bridge": "5.1.*"
