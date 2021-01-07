@@ -2,6 +2,7 @@
 
 namespace Experteam\ApiRedisBundle\Tests\Service;
 
+use Experteam\ApiRedisBundle\Entity\EntityWithPostChange;
 use Experteam\ApiRedisBundle\Service\RedisTransport\RedisTransport;
 use Experteam\ApiRedisBundle\Tests\TestKernel;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
@@ -28,7 +29,7 @@ class RedisTransportTest extends KernelTestCase
     /** @test */
     public function redisTransport()
     {
-        dump($this->redisTransport);
+        $this->redisTransport->processEntity(new EntityWithPostChange());
         $this->assertEquals(1, 1);
     }
 }

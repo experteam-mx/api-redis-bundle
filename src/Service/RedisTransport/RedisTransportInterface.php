@@ -5,9 +5,14 @@ namespace Experteam\ApiRedisBundle\Service\RedisTransport;
 interface RedisTransportInterface
 {
     /**
+     * @return array
+     */
+    public function getEntitiesConfig();
+
+    /**
      * @param $object
      */
-    public function postChangeEntity($object);
+    public function processEntity($object);
 
     /**
      * @param array $entitiesWithPostChange

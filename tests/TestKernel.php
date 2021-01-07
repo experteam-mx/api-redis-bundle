@@ -40,7 +40,8 @@ class TestKernel extends Kernel
     {
         $c->import('../config/{packages}/*.yaml');
         $c->import("{$this->getProjectDir()}/src/Resources/config/services.xml");
-        //$c->import("{$this->getProjectDir()}/tests/config/api_redis.yaml");
+        $c->import("{$this->getProjectDir()}/tests/config/experteam_api_redis.yaml");
+        $c->parameters()->set('app.prefix', 'inventories');
     }
 
 }

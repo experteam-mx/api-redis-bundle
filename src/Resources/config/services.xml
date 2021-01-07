@@ -19,11 +19,6 @@
         </service>
         <service id="Experteam\ApiRedisBundle\Service\RedisTransport\RedisTransportInterface" alias="api_redis.transport" />
 
-        <service id="Experteam\ApiRedisBundle\Repository\EntityWithPostChangeRepository">
-            <argument key="$registry" type="service" id="Doctrine\Persistence\ManagerRegistry"/>
-            <tag name="doctrine.repository_service" />
-        </service>
-
         <service id="Predis\Client" alias="snc_redis.default" />
     </services>
 </container>

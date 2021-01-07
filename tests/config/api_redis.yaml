@@ -1,5 +1,0 @@
-api_redis:
-    serialize_groups:
-        save_entities: read
-        dispatch_message: read
-    entities: null

@@ -58,48 +58,41 @@ class RedisTransport implements RedisTransportInterface
     }
 
     /**
+     * @return array
+     */
+    public function getEntitiesConfig()
+    {
+        return $this->parameterBag->get('experteam_api_redis.entities');
+    }
+
+    /**
      * @param $object
      */
-    public function postChangeEntity($object)
+    public function processEntity($object)
     {
-        $manager = $this->registry->getManager();
-        $entitiesWithPostChange = $manager->getRepository(EntityWithPostChange::class)->findBy(['isActive' => true]);
+        $entities = $this->parameterBag->get('experteam_api_redis.entities');
+        $class = get_class($object);
+        $cfg = $entities[$class] ?? null;
 
-        if (count($entitiesWithPostChange) > 0) {
+        if (!is_null($cfg)) {
             $appPrefix = $this->parameterBag->get('app.prefix');
+            $data = null;
 
-            /** @var EntityWithPostChange $entityWithPostChange */
-            foreach ($entitiesWithPostChange as $entityWithPostChange) {
-                $class = $entityWithPostChange->getClass();
-
-                if ($class !== basename(str_replace('\\', '/', get_class($object))))
-                    break;
-
-                $data = $this->serializer->serialize($object, 'json', ['groups' => 'read']);
-
-                $defaultContext = [AbstractNormalizer::CIRCULAR_REFERENCE_HANDLER => function ($object) {
-                    $method = 'getId';
-                    return (method_exists($object, $method) ? $object->$method() : null);
-                }];
-
-                $normalizer = new ObjectNormalizer(null, null, null, null, null, null, $defaultContext);
-                $serializer = new Serializer([$normalizer], [new JsonEncoder()]);
-                $serializer->serialize($object, 'json');
-
-                if ($entityWithPostChange->getToRedis()) {
-                    $method = $entityWithPostChange->getMethod();
-
-                    if (method_exists($object, $method)) {
-                        $this->redisClient->hset("{$appPrefix}.{$entityWithPostChange->getPrefix()}", $object->$method(), $data, false);
-                    }
+            if ($cfg['save']) {
+                $method = $cfg['save_method'];
+                if (method_exists($object, $method)) {
+                    $data = $this->serializer->serialize($object, 'json', ['groups' => $cfg['serialize_groups']['save']]);
+                    dd($data);
+                    $this->redisClient->hset("{$appPrefix}.{$cfg['prefix']}", $object->$method(), $data, false);
                 }
+            }
 
-                if ($entityWithPostChange->getDispatchMessage()) {
-                    $messageClass = "\App\Message\\{$class}Message";
-
-                    if (class_exists($messageClass)) {
-                        $this->messageBus->dispatch(new $messageClass($data));
-                    }
+            if ($cfg['message']) {
+                $messageClass = "\App\Message\\{$class}Message";
+                if (class_exists($messageClass)) {
+                    if (is_null($data) || $cfg['serialize_groups']['message'] != $cfg['serialize_groups']['save'])
+                        $data = $this->serializer->serialize($object, 'json', ['groups' => $cfg['serialize_groups']['message']]);
+                    $this->messageBus->dispatch(new $messageClass($data));
                 }
             }
         }

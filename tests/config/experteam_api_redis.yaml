@@ -1,0 +1,20 @@
+experteam_api_redis:
+    serialize_groups:
+        save: read
+        message: read
+    logger:
+        save: true
+        message: true
+    entities:
+        App\Entity\Operation:
+            prefix: operationPackage
+            save: false
+            message: true
+        Experteam\ApiRedisBundle\Entity\EntityWithPostChange:
+            prefix: entityWithPostChange
+            save: true
+            message: true
+        App\Entity\Package:
+            prefix: operationType
+            save: true
+            message: false
