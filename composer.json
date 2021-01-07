@@ -23,9 +23,6 @@
         "predis/predis": "^1.1",
         "symfony/flex": "^1.11"
     },
-    "require-dev": {
-        "symfony/phpunit-bridge": "5.1.*"
-    },
     "autoload": {
         "psr-4": {
             "Experteam\\ApiRedisBundle\\": "src/"
@@ -35,5 +32,8 @@
         "psr-4": {
             "Experteam\\ApiRedisBundle\\Tests\\": "tests/"
         }
+    },
+    "require-dev": {
+        "symfony/phpunit-bridge": "5.1.*"
     }
 }
