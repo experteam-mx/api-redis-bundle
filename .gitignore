@@ -1,4 +1,9 @@
 /bin/
+/config/
+/public/
+/templates/
+/translations/
+/var/
 /vendor/
 /.idea/
 composer.lock
@@ -11,4 +16,3 @@ phpunit.xml.dist
 /.env
 /.env.test
 /.env.local
-/var/

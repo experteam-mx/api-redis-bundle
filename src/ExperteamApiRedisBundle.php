@@ -10,9 +10,9 @@ class ExperteamApiRedisBundle extends Bundle
 {
     public function build(ContainerBuilder $container)
     {
-        $container->addCompilerPass(DoctrineOrmMappingsPass::createAnnotationMappingDriver(
+        /*$container->addCompilerPass(DoctrineOrmMappingsPass::createAnnotationMappingDriver(
             ['Experteam\ApiRedisBundle\Entity'],
             [realpath(__DIR__.'/Entity')]
-        ));
+        ));*/
     }
 }
