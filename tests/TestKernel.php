@@ -2,11 +2,13 @@
 
 namespace Experteam\ApiRedisBundle\Tests;
 
+use Doctrine\Bundle\DoctrineBundle\DoctrineBundle;
 use Experteam\ApiRedisBundle\ExperteamApiRedisBundle;
+use Snc\RedisBundle\SncRedisBundle;
+use Stof\DoctrineExtensionsBundle\StofDoctrineExtensionsBundle;
 use Symfony\Bundle\FrameworkBundle\FrameworkBundle;
 use Symfony\Bundle\FrameworkBundle\Kernel\MicroKernelTrait;
-use Symfony\Component\Config\Loader\LoaderInterface;
-use Symfony\Component\DependencyInjection\ContainerBuilder;
+use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
 use Symfony\Component\HttpKernel\Kernel;
 use Symfony\Component\Routing\Loader\Configurator\RoutingConfigurator;
 
@@ -14,12 +16,19 @@ class TestKernel extends Kernel
 {
     use MicroKernelTrait;
 
-    public function registerBundles(): array
+    public function registerBundles()
     {
-        return [
-            new FrameworkBundle(),
-            new ExperteamApiRedisBundle()
+        $bundles = [
+            FrameworkBundle::class,
+            DoctrineBundle::class,
+            StofDoctrineExtensionsBundle::class,
+            SncRedisBundle::class,
+            ExperteamApiRedisBundle::class
         ];
+
+        foreach ($bundles as $class) {
+            yield new $class();
+        }
     }
 
     protected function configureRoutes(RoutingConfigurator $routes)
@@ -27,10 +36,11 @@ class TestKernel extends Kernel
         //$routes->import(__DIR__.'/../../src/Resources/config/routes.xml')->prefix('/api');
     }
 
-    protected function configureContainer(ContainerBuilder $c, LoaderInterface $loader)
+    protected function configureContainer(ContainerConfigurator $c)
     {
-        $loader->load($this->getProjectDir().'/src/Resources/config/services.xml', 'glob');
-        $loader->load($this->getProjectDir().'/config/packages/api_redis.yaml', 'glob');
+        $c->import('../config/{packages}/*.yaml');
+        $c->import("{$this->getProjectDir()}/src/Resources/config/services.xml");
+        //$c->import("{$this->getProjectDir()}/tests/config/api_redis.yaml");
     }
 
 }

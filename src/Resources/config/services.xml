@@ -4,13 +4,13 @@
            xsi:schemaLocation="http://symfony.com/schema/dic/services
         http://symfony.com/schema/dic/services/services-1.0.xsd">
     <services>
-        <service id="api_redis.client" class="Experteam\ApiRedisBundle\Service\RedisClient\RedisClient" >
+        <service id="api_redis.client" class="Experteam\ApiRedisBundle\Service\RedisClient\RedisClient" public="true">
             <argument key="$predisClient" type="service" id="Predis\Client"/>
             <argument key="$serializer" type="service" id="Symfony\Component\Serializer\SerializerInterface"/>
         </service>
         <service id="Experteam\ApiRedisBundle\Service\RedisClient\RedisClientInterface" alias="api_redis.client" />
 
-        <service id="api_redis.transport" class="Experteam\ApiRedisBundle\Service\RedisTransport\RedisTransport" >
+        <service id="api_redis.transport" class="Experteam\ApiRedisBundle\Service\RedisTransport\RedisTransport" public="true">
             <argument key="$container" type="service" id="Symfony\Component\DependencyInjection\ContainerInterface"/>
             <argument key="$redisClient" type="service" id="Experteam\ApiRedisBundle\Service\RedisClient\RedisClientInterface"/>
             <argument key="$serializer" type="service" id="Symfony\Component\Serializer\SerializerInterface"/>

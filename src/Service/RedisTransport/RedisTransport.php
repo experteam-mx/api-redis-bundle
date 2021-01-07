@@ -2,9 +2,10 @@
 
 namespace Experteam\ApiRedisBundle\Service\RedisTransport;
 
+use Doctrine\Persistence\ManagerRegistry;
 use Experteam\ApiRedisBundle\Entity\EntityWithPostChange;
 use Experteam\ApiRedisBundle\Service\RedisClient\RedisClientInterface;
-use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Serializer\Encoder\JsonEncoder;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
@@ -15,9 +16,14 @@ use Symfony\Component\Serializer\SerializerInterface;
 class RedisTransport implements RedisTransportInterface
 {
     /**
-     * @var ContainerInterface
+     * @var ParameterBagInterface
      */
-    private $container;
+    private $parameterBag;
+
+    /**
+     * @var ManagerRegistry
+     */
+    private $registry;
 
     /**
      * @var RedisClientInterface
@@ -36,14 +42,16 @@ class RedisTransport implements RedisTransportInterface
 
     /**
      * PostChange constructor.
-     * @param ContainerInterface $container
+     * @param ParameterBagInterface $parameterBag
+     * @param ManagerRegistry $registry
      * @param RedisClientInterface $redisClient
      * @param SerializerInterface $serializer
      * @param MessageBusInterface $messageBus
      */
-    public function __construct(ContainerInterface $container, RedisClientInterface $redisClient, SerializerInterface $serializer, MessageBusInterface $messageBus)
+    public function __construct(ParameterBagInterface $parameterBag, ManagerRegistry $registry, RedisClientInterface $redisClient, SerializerInterface $serializer, MessageBusInterface $messageBus)
     {
-        $this->container = $container;
+        $this->parameterBag = $parameterBag;
+        $this->registry = $registry;
         $this->redisClient = $redisClient;
         $this->serializer = $serializer;
         $this->messageBus = $messageBus;
@@ -54,10 +62,11 @@ class RedisTransport implements RedisTransportInterface
      */
     public function postChangeEntity($object)
     {
-        $entitiesWithPostChange = $this->container->get('doctrine')->getRepository(EntityWithPostChange::class)->findBy(['isActive' => true]);
+        $manager = $this->registry->getManager();
+        $entitiesWithPostChange = $manager->getRepository(EntityWithPostChange::class)->findBy(['isActive' => true]);
 
         if (count($entitiesWithPostChange) > 0) {
-            $appPrefix = $this->container->getParameter('app.prefix');
+            $appPrefix = $this->parameterBag->get('app.prefix');
 
             /** @var EntityWithPostChange $entityWithPostChange */
             foreach ($entitiesWithPostChange as $entityWithPostChange) {
@@ -101,7 +110,7 @@ class RedisTransport implements RedisTransportInterface
      */
     public function loadEntitiesWithPostChange(array $entitiesWithPostChange)
     {
-        $manager = $this->container->get('doctrine')->getManager();
+        $manager = $this->registry->getManager();
         $entityWithPostChangeRepository = $manager->getRepository(EntityWithPostChange::class);
 
         foreach ($entitiesWithPostChange as $value) {
