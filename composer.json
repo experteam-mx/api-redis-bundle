@@ -15,15 +15,24 @@
         "doctrine/orm": "2.7.*",
         "doctrine/doctrine-bundle": "2.0.*",
         "antishov/doctrine-extensions-bundle": "^1.4",
+        "symfony/config": "5.1.*",
         "symfony/dependency-injection": "5.1.*",
         "symfony/http-kernel": "5.1.*",
         "symfony/serializer": "5.1.*",
         "symfony/messenger": "5.1.*",
         "predis/predis": "^1.1"
     },
+    "require-dev": {
+        "symfony/phpunit-bridge": "5.1.*"
+    },
     "autoload": {
         "psr-4": {
             "Experteam\\ApiRedisBundle\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Experteam\\ApiRedisBundle\\Tests\\": "tests/"
         }
     }
 }

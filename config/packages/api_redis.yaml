@@ -1,0 +1,17 @@
+api_redis:
+    serialize_groups:
+        save_entities: read
+        dispatch_message: read
+    entities:
+        App\Entity\OperationPackage:
+            prefix: operationPackage
+            save: false
+            message: true
+        App\Entity\Checkpoint:
+            prefix: checkpoint
+            save: true
+            message: false
+        App\Entity\OperationType:
+            prefix: operationType
+            save: true
+            message: false
