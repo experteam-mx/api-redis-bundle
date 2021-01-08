@@ -2,6 +2,9 @@
 
 namespace Experteam\ApiRedisBundle\Service\RedisTransport;
 
+use DateTime;
+use Exception;
+
 interface RedisTransportInterface
 {
     /**
@@ -15,8 +18,16 @@ interface RedisTransportInterface
     public function processEntity($object);
 
     /**
-     * @param array $entitiesWithPostChange
+     * @param array $entityClasses
      */
-    public function loadEntitiesWithPostChange(array $entitiesWithPostChange);
+    public function processAllSaves(array $entityClasses = []);
+
+    /**
+     * @param array $entityClasses
+     * @param DateTime|null $updatedFrom
+     * @param array $filters
+     * @throws Exception
+     */
+    public function processAllMessages(array $entityClasses = [], DateTime $updatedFrom = null, array $filters = []);
 
 }

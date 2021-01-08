@@ -2,15 +2,13 @@
 
 namespace Experteam\ApiRedisBundle\Service\RedisTransport;
 
+use DateTime;
 use Doctrine\Persistence\ManagerRegistry;
-use Experteam\ApiRedisBundle\Entity\EntityWithPostChange;
+use Doctrine\Persistence\Mapping\ClassMetadata;
+use Exception;
 use Experteam\ApiRedisBundle\Service\RedisClient\RedisClientInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\Messenger\MessageBusInterface;
-use Symfony\Component\Serializer\Encoder\JsonEncoder;
-use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
-use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
-use Symfony\Component\Serializer\Serializer;
 use Symfony\Component\Serializer\SerializerInterface;
 
 class RedisTransport implements RedisTransportInterface
@@ -82,7 +80,6 @@ class RedisTransport implements RedisTransportInterface
                 $method = $cfg['save_method'];
                 if (method_exists($object, $method)) {
                     $data = $this->serializer->serialize($object, 'json', ['groups' => $cfg['serialize_groups']['save']]);
-                    dd($data);
                     $this->redisClient->hset("{$appPrefix}.{$cfg['prefix']}", $object->$method(), $data, false);
                 }
             }
@@ -99,33 +96,77 @@ class RedisTransport implements RedisTransportInterface
     }
 
     /**
-     * @param array $entitiesWithPostChange
+     * @param array $entityClasses
      */
-    public function loadEntitiesWithPostChange(array $entitiesWithPostChange)
+    public function processAllSaves(array $entityClasses = [])
     {
+        $entities = $this->parameterBag->get('experteam_api_redis.entities');
         $manager = $this->registry->getManager();
-        $entityWithPostChangeRepository = $manager->getRepository(EntityWithPostChange::class);
+        $appPrefix = $this->parameterBag->get('app.prefix');
 
-        foreach ($entitiesWithPostChange as $value) {
-            $class = $value['class'];
-            $entityWithPostChange = $entityWithPostChangeRepository->findOneBy(['class' => $class]);
+        foreach ($entities as $class => $cfg) {
+            if (!$cfg['save'] || (!empty($entityClasses) && !in_array($class, $entityClasses)))
+                continue;
 
-            if (is_null($entityWithPostChange)) {
-                $entityWithPostChange = new EntityWithPostChange();
-                $entityWithPostChange->setClass($class);
+            $objects = $manager->getRepository($class)->findAll();
+            foreach ($objects as $object) {
+                $method = $cfg['save_method'];
+                if (method_exists($object, $method)) {
+                    $data = $this->serializer->serialize($object, 'json', ['groups' => $cfg['serialize_groups']['save']]);
+                    $this->redisClient->hset("{$appPrefix}.{$cfg['prefix']}", $object->$method(), $data, false);
+                }
             }
-
-            $entityWithPostChange->setPrefix($value['prefix']);
-            $entityWithPostChange->setToRedis($value['toRedis']);
-            $entityWithPostChange->setDispatchMessage($value['dispatchMessage']);
-
-            if (isset($value['method'])) {
-                $entityWithPostChange->setMethod($value['method']);
-            }
-
-            $manager->persist($entityWithPostChange);
         }
+    }
 
-        $manager->flush();
+    /**
+     * @param array $entityClasses
+     * @param DateTime|null $updatedFrom
+     * @param array $filters
+     * @throws Exception
+     */
+    public function processAllMessages(array $entityClasses = [], DateTime $updatedFrom = null, array $filters = [])
+    {
+        $entities = $this->parameterBag->get('experteam_api_redis.entities');
+        $manager = $this->registry->getManager();
+
+        foreach ($entities as $class => $cfg) {
+            if (!$cfg['message'] || (!empty($entityClasses) && !in_array($class, $entityClasses)))
+                continue;
+
+            $metadata = $this->getClassMetadata($class);
+            $qb = $manager->getRepository($class)->createQueryBuilder('e');
+
+            if (!is_null($updatedFrom) && $metadata->hasField('updatedAt')) {
+                $qb->andWhere('e.updatedAt >= :updatedFrom')
+                    ->setParameter('updatedFrom', $updatedFrom);
+            }
+            if (!empty($filters)) {
+                foreach ($filters[$class] ?? [] as $field => $value) {
+                    if (!$metadata->hasField($field))
+                        throw new Exception(sprintf('RedisTransport: the field %s not exists on class %s', $field, $class));
+                    $qb->andWhere(sprintf('e.%s = :%s', $field, $field))
+                        ->setParameter($field, $value);
+                }
+            }
+
+            $objects = $qb->getQuery()->getResult();
+            foreach ($objects as $object) {
+                $messageClass = "\App\Message\\{$class}Message";
+                if (class_exists($messageClass)) {
+                    $data = $this->serializer->serialize($object, 'json', ['groups' => $cfg['serialize_groups']['message']]);
+                    $this->messageBus->dispatch(new $messageClass($data));
+                }
+            }
+        }
+    }
+
+    /**
+     * @param string $className
+     * @return ClassMetadata
+     */
+    protected function getClassMetadata(string $className): ClassMetadata
+    {
+        return $this->registry->getManagerForClass($className)->getClassMetadata($className);
     }
 }
