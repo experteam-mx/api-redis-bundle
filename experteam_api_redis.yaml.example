@@ -6,11 +6,11 @@ experteam_api_redis:
         save: true
         message: true
 #    entities:
-#        App\Entity\Operation:
-#            prefix: operationPackage
+#        App\Entity\Product:
+#            prefix: product
 #            save: false
 #            message: true
-#        App\Entity\Package:
-#            prefix: operationType
+#        App\Entity\Status:
+#            prefix: status
 #            save: true
 #            message: false
