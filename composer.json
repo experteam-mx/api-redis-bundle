@@ -1,6 +1,7 @@
 {
     "name": "experteam/api-redis-bundle",
     "description": "REDIS functionality bundle for APIs.",
+    "homepage": "https://github.com/experteam-mx/api-redis-bundle",
     "type": "symfony-bundle",
     "license": "MIT",
     "authors": [
