@@ -5,7 +5,6 @@ namespace Experteam\ApiRedisBundle\Tests;
 use Doctrine\Bundle\DoctrineBundle\DoctrineBundle;
 use Experteam\ApiRedisBundle\ExperteamApiRedisBundle;
 use Snc\RedisBundle\SncRedisBundle;
-use Stof\DoctrineExtensionsBundle\StofDoctrineExtensionsBundle;
 use Symfony\Bundle\FrameworkBundle\FrameworkBundle;
 use Symfony\Bundle\FrameworkBundle\Kernel\MicroKernelTrait;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
@@ -21,7 +20,6 @@ class TestKernel extends Kernel
         $bundles = [
             FrameworkBundle::class,
             DoctrineBundle::class,
-            StofDoctrineExtensionsBundle::class,
             SncRedisBundle::class,
             ExperteamApiRedisBundle::class
         ];
