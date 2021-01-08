@@ -8,9 +8,33 @@ It includes:
 
 ### Install
 
-Run de following composer command: <br>
+1. Run de following composer command: <br>
 ```
 composer require experteam/api-redis-bundle
+```
+
+2. Create the configuration file or copy example file to: <br>
+
+`config/packages/experteam_api_redis.yaml`
+
+3. Set the bundle configuration: <br>
+```
+experteam_api_redis:
+    serialize_groups:
+        save: read
+        message: read
+    logger:
+        save: true
+        message: true
+    entities:
+        [Entity Namespace]:
+            prefix: [prefix]
+            save: false
+            message: true
+        [Entity Namespace]:
+            prefix: [prefix]
+            save: true
+            message: false
 ```
 
 ### Update
