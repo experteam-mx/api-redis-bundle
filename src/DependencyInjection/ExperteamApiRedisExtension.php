@@ -17,10 +17,10 @@ class ExperteamApiRedisExtension extends Extension
 
         $config = (new Processor())->processConfiguration(new Configuration(), $configs);
         $serializeGroups = $config['serialize_groups'];
-        $logger = $config['logger'];
+        $logger = $config['elk_logger'];
         $configEntities = array_map(function($cfg) use($serializeGroups, $logger) {
             $cfg['serialize_groups'] = $cfg['serialize_groups'] ?? $serializeGroups;
-            $cfg['logger'] = $cfg['logger'] ?? $logger;
+            $cfg['elk_logger'] = $cfg['elk_logger'] ?? $logger;
             return $cfg;
         }, $config['entities'] ?? []);
 

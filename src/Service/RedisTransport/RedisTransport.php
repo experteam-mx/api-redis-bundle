@@ -2,13 +2,14 @@
 
 namespace Experteam\ApiRedisBundle\Service\RedisTransport;
 
-use DateTime;
 use Doctrine\Persistence\ManagerRegistry;
-use Doctrine\Persistence\Mapping\ClassMetadata;
-use Exception;
 use Experteam\ApiRedisBundle\Service\RedisClient\RedisClientInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\Messenger\MessageBusInterface;
+use Symfony\Component\Serializer\Encoder\JsonEncoder;
+use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
+use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
+use Symfony\Component\Serializer\Serializer;
 use Symfony\Component\Serializer\SerializerInterface;
 
 class RedisTransport implements RedisTransportInterface
@@ -70,103 +71,53 @@ class RedisTransport implements RedisTransportInterface
     {
         $entities = $this->parameterBag->get('experteam_api_redis.entities');
         $class = get_class($object);
-        $cfg = $entities[$class] ?? null;
 
-        if (!is_null($cfg)) {
+        if (isset($entities[$class])) {
+            $cfg = $entities[$class];
             $appPrefix = $this->parameterBag->get('app.prefix');
             $data = null;
 
             if ($cfg['save']) {
                 $method = $cfg['save_method'];
                 if (method_exists($object, $method)) {
-                    $data = $this->serializer->serialize($object, 'json', ['groups' => $cfg['serialize_groups']['save']]);
+                    $data = $this->serializeWithCircularRefHandler($object, [$cfg['serialize_groups']['save']]);
                     $this->redisClient->hset("{$appPrefix}.{$cfg['prefix']}", $object->$method(), $data, false);
+
+                    /* Todo: log save to redis */
+                    /*if ($cfg['elk_logger']['save']) {
+                    }*/
                 }
             }
 
             if ($cfg['message']) {
-                $messageClass = "\App\Message\\{$class}Message";
+                $messageClass = $cfg['message_class'];
                 if (class_exists($messageClass)) {
                     if (is_null($data) || $cfg['serialize_groups']['message'] != $cfg['serialize_groups']['save'])
-                        $data = $this->serializer->serialize($object, 'json', ['groups' => $cfg['serialize_groups']['message']]);
+                        $data = $this->serializeWithCircularRefHandler($object, [$cfg['serialize_groups']['message']]);
                     $this->messageBus->dispatch(new $messageClass($data));
+
+                    /* Todo: log dispatch message */
+                    /*if ($cfg['elk_logger']['message']) {
+                    }*/
                 }
             }
         }
     }
 
     /**
-     * @param array $entityClasses
+     * @param $object
+     * @param array|null $groups
+     * @return string
      */
-    public function processAllSaves(array $entityClasses = [])
+    protected function serializeWithCircularRefHandler($object, array $groups = null)
     {
-        $entities = $this->parameterBag->get('experteam_api_redis.entities');
-        $manager = $this->registry->getManager();
-        $appPrefix = $this->parameterBag->get('app.prefix');
-
-        foreach ($entities as $class => $cfg) {
-            if (!$cfg['save'] || (!empty($entityClasses) && !in_array($class, $entityClasses)))
-                continue;
-
-            $objects = $manager->getRepository($class)->findAll();
-            foreach ($objects as $object) {
-                $method = $cfg['save_method'];
-                if (method_exists($object, $method)) {
-                    $data = $this->serializer->serialize($object, 'json', ['groups' => $cfg['serialize_groups']['save']]);
-                    $this->redisClient->hset("{$appPrefix}.{$cfg['prefix']}", $object->$method(), $data, false);
-                }
+        $defaultContext = [
+            AbstractNormalizer::CIRCULAR_REFERENCE_HANDLER => function ($object) {
+                return method_exists($object, 'getId') ? $object->getId() : null;
             }
-        }
-    }
-
-    /**
-     * @param array $entityClasses
-     * @param DateTime|null $updatedFrom
-     * @param array $filters
-     * @throws Exception
-     */
-    public function processAllMessages(array $entityClasses = [], DateTime $updatedFrom = null, array $filters = [])
-    {
-        $entities = $this->parameterBag->get('experteam_api_redis.entities');
-        $manager = $this->registry->getManager();
-
-        foreach ($entities as $class => $cfg) {
-            if (!$cfg['message'] || (!empty($entityClasses) && !in_array($class, $entityClasses)))
-                continue;
-
-            $metadata = $this->getClassMetadata($class);
-            $qb = $manager->getRepository($class)->createQueryBuilder('e');
-
-            if (!is_null($updatedFrom) && $metadata->hasField('updatedAt')) {
-                $qb->andWhere('e.updatedAt >= :updatedFrom')
-                    ->setParameter('updatedFrom', $updatedFrom);
-            }
-            if (!empty($filters)) {
-                foreach ($filters[$class] ?? [] as $field => $value) {
-                    if (!$metadata->hasField($field))
-                        throw new Exception(sprintf('RedisTransport: the field %s not exists on class %s', $field, $class));
-                    $qb->andWhere(sprintf('e.%s = :%s', $field, $field))
-                        ->setParameter($field, $value);
-                }
-            }
-
-            $objects = $qb->getQuery()->getResult();
-            foreach ($objects as $object) {
-                $messageClass = "\App\Message\\{$class}Message";
-                if (class_exists($messageClass)) {
-                    $data = $this->serializer->serialize($object, 'json', ['groups' => $cfg['serialize_groups']['message']]);
-                    $this->messageBus->dispatch(new $messageClass($data));
-                }
-            }
-        }
-    }
-
-    /**
-     * @param string $className
-     * @return ClassMetadata
-     */
-    protected function getClassMetadata(string $className): ClassMetadata
-    {
-        return $this->registry->getManagerForClass($className)->getClassMetadata($className);
+        ];
+        $normalizer = new ObjectNormalizer(null, null, null, null, null, null, $defaultContext);
+        $serializer = new Serializer([$normalizer], [new JsonEncoder()]);
+        return $serializer->serialize($object, 'json', !is_null($groups) ? ['groups' => $groups] : []);
     }
 }

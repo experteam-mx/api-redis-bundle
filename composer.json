@@ -36,7 +36,8 @@
         "symfony/flex": "^1.11",
         "symfony/dotenv": "5.1.*",
         "symfony/phpunit-bridge": "5.1.*",
-        "symfony/config": "5.1.*"
+        "symfony/config": "5.1.*",
+        "symfony/property-access": "5.1.*"
     },
     "scripts": {
         "auto-scripts": {

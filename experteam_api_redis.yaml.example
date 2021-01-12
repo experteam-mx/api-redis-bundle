@@ -2,15 +2,17 @@ experteam_api_redis:
     serialize_groups:
         save: read
         message: read
-    logger:
-        save: true
+    elk_logger:
+        save: false
         message: true
 #    entities:
 #        App\Entity\Product:
 #            prefix: product
-#            save: false
-#            message: true
+#            save: true
+#            save_method: getId     #optional (default getId)
+#            message: false
 #        App\Entity\Status:
 #            prefix: status
-#            save: true
-#            message: false
+#            save: false
+#            message: true
+#            message_class: App\Message\OperationMessage    #required only if message equal true
