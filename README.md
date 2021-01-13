@@ -45,7 +45,7 @@ experteam_api_redis:
             prefix: [prefix]
             save: false
             message: true
-            message_class: App\Message\OperationMessage    #required only if message equal true
+            message_class: [Message Class Namespace]    #required only if message equal true
         [Entity Namespace]:
             prefix: [prefix]
             save: true
