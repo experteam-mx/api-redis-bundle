@@ -6,10 +6,6 @@ use Doctrine\Persistence\ManagerRegistry;
 use Experteam\ApiRedisBundle\Service\RedisClient\RedisClientInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\Messenger\MessageBusInterface;
-use Symfony\Component\Serializer\Encoder\JsonEncoder;
-use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
-use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
-use Symfony\Component\Serializer\Serializer;
 use Symfony\Component\Serializer\SerializerInterface;
 
 class RedisTransport implements RedisTransportInterface
@@ -111,13 +107,11 @@ class RedisTransport implements RedisTransportInterface
      */
     protected function serializeWithCircularRefHandler($object, array $groups = null)
     {
-        $defaultContext = [
-            AbstractNormalizer::CIRCULAR_REFERENCE_HANDLER => function ($object) {
+        return $this->serializer->serialize($object, 'json', [
+            !is_null($groups) ? ['groups' => $groups] : [],
+            'circular_reference_handler' => function ($object) {
                 return method_exists($object, 'getId') ? $object->getId() : null;
             }
-        ];
-        $normalizer = new ObjectNormalizer(null, null, null, null, null, null, $defaultContext);
-        $serializer = new Serializer([$normalizer], [new JsonEncoder()]);
-        return $serializer->serialize($object, 'json', !is_null($groups) ? ['groups' => $groups] : []);
+        ]);
     }
 }
