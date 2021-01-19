@@ -107,11 +107,15 @@ class RedisTransport implements RedisTransportInterface
      */
     protected function serializeWithCircularRefHandler($object, array $groups = null)
     {
-        return $this->serializer->serialize($object, 'json', [
-            !is_null($groups) ? ['groups' => $groups] : [],
+        $context = [
             'circular_reference_handler' => function ($object) {
                 return method_exists($object, 'getId') ? $object->getId() : null;
             }
-        ]);
+        ];
+
+        if (!is_null($groups))
+            $context['groups'] = $groups;
+
+        return $this->serializer->serialize($object, 'json', $context);
     }
 }
