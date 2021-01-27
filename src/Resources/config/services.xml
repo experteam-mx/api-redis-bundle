@@ -16,6 +16,7 @@
             <argument key="$redisClient" type="service" id="Experteam\ApiRedisBundle\Service\RedisClient\RedisClientInterface"/>
             <argument key="$serializer" type="service" id="Symfony\Component\Serializer\SerializerInterface"/>
             <argument key="$messageBus" type="service" id="Symfony\Component\Messenger\MessageBusInterface"/>
+            <argument key="$elkLogger" type="service" id="Experteam\ApiBaseBundle\Service\ELKLogger\ELKLoggerInterface"/>
         </service>
         <service id="Experteam\ApiRedisBundle\Service\RedisTransport\RedisTransportInterface" alias="api_redis.transport" />
 
