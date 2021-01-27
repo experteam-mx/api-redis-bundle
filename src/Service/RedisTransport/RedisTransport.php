@@ -3,6 +3,7 @@
 namespace Experteam\ApiRedisBundle\Service\RedisTransport;
 
 use Doctrine\Persistence\ManagerRegistry;
+use Experteam\ApiBaseBundle\Service\ELKLogger\ELKLoggerInterface;
 use Experteam\ApiRedisBundle\Service\RedisClient\RedisClientInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\Messenger\MessageBusInterface;
@@ -36,20 +37,27 @@ class RedisTransport implements RedisTransportInterface
     private $messageBus;
 
     /**
+     * @var ELKLoggerInterface
+     */
+    private $elkLogger;
+
+    /**
      * PostChange constructor.
      * @param ParameterBagInterface $parameterBag
      * @param ManagerRegistry $registry
      * @param RedisClientInterface $redisClient
      * @param SerializerInterface $serializer
      * @param MessageBusInterface $messageBus
+     * @param ELKLoggerInterface $elkLogger
      */
-    public function __construct(ParameterBagInterface $parameterBag, ManagerRegistry $registry, RedisClientInterface $redisClient, SerializerInterface $serializer, MessageBusInterface $messageBus)
+    public function __construct(ParameterBagInterface $parameterBag, ManagerRegistry $registry, RedisClientInterface $redisClient, SerializerInterface $serializer, MessageBusInterface $messageBus, ELKLoggerInterface $elkLogger)
     {
         $this->parameterBag = $parameterBag;
         $this->registry = $registry;
         $this->redisClient = $redisClient;
         $this->serializer = $serializer;
         $this->messageBus = $messageBus;
+        $this->elkLogger = $elkLogger;
     }
 
     /**
@@ -79,9 +87,9 @@ class RedisTransport implements RedisTransportInterface
                     $data = $this->serializeWithCircularRefHandler($object, [$cfg['serialize_groups']['save']]);
                     $this->redisClient->hset("{$appPrefix}.{$cfg['prefix']}", $object->$method(), $data, false);
 
-                    /* Todo: log save to redis */
-                    /*if ($cfg['elk_logger']['save']) {
-                    }*/
+                    if ($cfg['elk_logger']['save']) {
+                        $this->elkLogger->infoLog("{$cfg['prefix']}_save_redis", ['data' => $data]);
+                    }
                 }
             }
 
@@ -92,9 +100,9 @@ class RedisTransport implements RedisTransportInterface
                         $data = $this->serializeWithCircularRefHandler($object, [$cfg['serialize_groups']['message']]);
                     $this->messageBus->dispatch(new $messageClass($data));
 
-                    /* Todo: log dispatch message */
-                    /*if ($cfg['elk_logger']['message']) {
-                    }*/
+                    if ($cfg['elk_logger']['message']) {
+                        $this->elkLogger->infoLog("{$cfg['prefix']}_message", ['data' => $data]);
+                    }
                 }
             }
         }
