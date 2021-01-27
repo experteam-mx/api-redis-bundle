@@ -11,11 +11,6 @@ use Symfony\Component\Serializer\Encoder\EncoderInterface;
 abstract class MessageSerializer implements SerializerInterface
 {
     /**
-     * @var string
-     */
-    protected $messageClass;
-
-    /**
      * @var DecoderInterface
      */
     protected $decoder;
@@ -43,12 +38,12 @@ abstract class MessageSerializer implements SerializerInterface
     public function decode(array $encodedEnvelope): Envelope
     {
         $data = [];
-        $messageClass = $this->messageClass;
+        $messageClass = $this->getMessageClass();
 
-        if (is_null($this->messageClass))
-            throw new Exception(sprintf('Empty message class. Please redefine and assign the messageClass field in %s', get_class($this)));
+        if (empty($messageClass))
+            throw new Exception(sprintf('Empty message class. Please redefine the getMessageClass function in %s', get_class($this)));
 
-        if (!class_exists($this->messageClass))
+        if (!class_exists($messageClass))
             throw new Exception(sprintf('Message class "%s" does not exist', $messageClass));
 
         if (isset($encodedEnvelope['body'])) {
@@ -69,12 +64,12 @@ abstract class MessageSerializer implements SerializerInterface
      */
     public function encode(Envelope $envelope): array
     {
-        $messageClass = $this->messageClass;
+        $messageClass = $this->getMessageClass();
 
-        if (is_null($this->messageClass))
-            throw new Exception(sprintf('Empty message class. Please redefine and assign the messageClass field in %s', get_class($this)));
+        if (empty($messageClass))
+            throw new Exception(sprintf('Empty message class. Please redefine the getMessageClass function in %s', get_class($this)));
 
-        if (!class_exists($this->messageClass))
+        if (!class_exists($messageClass))
             throw new Exception(sprintf('Message class "%s" does not exist', $messageClass));
 
         $body = '';
@@ -85,5 +80,13 @@ abstract class MessageSerializer implements SerializerInterface
         }
 
         return ['body' => $body];
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getMessageClass()
+    {
+        return null;
     }
 }
