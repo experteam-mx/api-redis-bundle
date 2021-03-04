@@ -12,7 +12,7 @@
 
         <service id="api_redis.transport" class="Experteam\ApiRedisBundle\Service\RedisTransport\RedisTransport" public="true">
             <argument key="$parameterBag" type="service" id="Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface"/>
-            <argument key="$registry" type="service" id="Doctrine\Persistence\ManagerRegistry"/>
+            <argument key="$doctrine" type="service" id="Doctrine\Persistence\ManagerRegistry"/>
             <argument key="$redisClient" type="service" id="Experteam\ApiRedisBundle\Service\RedisClient\RedisClientInterface"/>
             <argument key="$serializer" type="service" id="Symfony\Component\Serializer\SerializerInterface"/>
             <argument key="$messageBus" type="service" id="Symfony\Component\Messenger\MessageBusInterface"/>

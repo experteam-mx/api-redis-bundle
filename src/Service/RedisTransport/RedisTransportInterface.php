@@ -7,11 +7,12 @@ interface RedisTransportInterface
     /**
      * @return array
      */
-    public function getEntitiesConfig();
+    public function getEntitiesConfig(): array;
 
     /**
-     * @param $object
+     * @param object $object
      */
-    public function processEntity($object);
+    public function processEntity(object $object);
 
+    public function restoreData();
 }
