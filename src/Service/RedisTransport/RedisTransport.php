@@ -4,7 +4,7 @@ namespace Experteam\ApiRedisBundle\Service\RedisTransport;
 
 use DateTime;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
-use Doctrine\Persistence\ManagerRegistry;
+use Doctrine\ORM\EntityManagerInterface;
 use Experteam\ApiBaseBundle\Service\ELKLogger\ELKLoggerInterface;
 use Experteam\ApiRedisBundle\Service\RedisClient\RedisClientInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
@@ -19,9 +19,9 @@ class RedisTransport implements RedisTransportInterface
     private $parameterBag;
 
     /**
-     * @var ManagerRegistry
+     * @var EntityManagerInterface
      */
-    private $doctrine;
+    private $entityManager;
 
     /**
      * @var RedisClientInterface
@@ -46,16 +46,16 @@ class RedisTransport implements RedisTransportInterface
     /**
      * PostChange constructor.
      * @param ParameterBagInterface $parameterBag
-     * @param ManagerRegistry $doctrine
+     * @param EntityManagerInterface $entityManager
      * @param RedisClientInterface $redisClient
      * @param SerializerInterface $serializer
      * @param MessageBusInterface $messageBus
      * @param ELKLoggerInterface $elkLogger
      */
-    public function __construct(ParameterBagInterface $parameterBag, ManagerRegistry $doctrine, RedisClientInterface $redisClient, SerializerInterface $serializer, MessageBusInterface $messageBus, ELKLoggerInterface $elkLogger)
+    public function __construct(ParameterBagInterface $parameterBag, EntityManagerInterface $entityManager, RedisClientInterface $redisClient, SerializerInterface $serializer, MessageBusInterface $messageBus, ELKLoggerInterface $elkLogger)
     {
         $this->parameterBag = $parameterBag;
-        $this->doctrine = $doctrine;
+        $this->entityManager = $entityManager;
         $this->redisClient = $redisClient;
         $this->serializer = $serializer;
         $this->messageBus = $messageBus;
@@ -160,7 +160,7 @@ class RedisTransport implements RedisTransportInterface
         if (count($entitiesConfig) > 0) {
             foreach ($entitiesConfig as $class => $entityConfig) {
                 if ($entityConfig['save']) {
-                    $objects = $this->doctrine->getRepository($class)->findAll();
+                    $objects = $this->entityManager->getRepository($class)->findAll();
 
                     if (count($objects) > 0) {
                         foreach ($objects as $object) {
@@ -184,7 +184,7 @@ class RedisTransport implements RedisTransportInterface
             foreach ($entitiesConfig as $class => $entityConfig) {
                 if ($entityConfig['message']) {
                     /** @var ServiceEntityRepository $repository */
-                    $repository = $this->doctrine->getRepository($class);
+                    $repository = $this->entityManager->getRepository($class);
 
                     $objects = $repository->createQueryBuilder('qb')
                         ->where('qb.createdAt >= :createdAt')
