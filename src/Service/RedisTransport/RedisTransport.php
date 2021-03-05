@@ -2,6 +2,8 @@
 
 namespace Experteam\ApiRedisBundle\Service\RedisTransport;
 
+use DateTime;
+use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 use Experteam\ApiBaseBundle\Service\ELKLogger\ELKLoggerInterface;
 use Experteam\ApiRedisBundle\Service\RedisClient\RedisClientInterface;
@@ -100,6 +102,28 @@ class RedisTransport implements RedisTransportInterface
     }
 
     /**
+     * @param array $entityConfig
+     * @param object $object
+     * @param null $data
+     */
+    protected function message(array $entityConfig, object $object, $data = null)
+    {
+        $messageClass = $entityConfig['message_class'];
+
+        if (class_exists($messageClass)) {
+            if (is_null($data) || $entityConfig['serialize_groups']['message'] != $entityConfig['serialize_groups']['save']) {
+                $data = $this->serializeWithCircularRefHandler($object, [$entityConfig['serialize_groups']['message']]);
+            }
+
+            $this->messageBus->dispatch(new $messageClass($data));
+
+            if ($entityConfig['elk_logger']['message']) {
+                $this->elkLogger->infoLog("{$entityConfig['prefix']}_message", ['data' => $data]);
+            }
+        }
+    }
+
+    /**
      * @return array
      */
     public function getEntitiesConfig(): array
@@ -124,19 +148,7 @@ class RedisTransport implements RedisTransportInterface
             }
 
             if ($entityConfig['message']) {
-                $messageClass = $entityConfig['message_class'];
-
-                if (class_exists($messageClass)) {
-                    if (is_null($data) || $entityConfig['serialize_groups']['message'] != $entityConfig['serialize_groups']['save']) {
-                        $data = $this->serializeWithCircularRefHandler($object, [$entityConfig['serialize_groups']['message']]);
-                    }
-
-                    $this->messageBus->dispatch(new $messageClass($data));
-
-                    if ($entityConfig['elk_logger']['message']) {
-                        $this->elkLogger->infoLog("{$entityConfig['prefix']}_message", ['data' => $data]);
-                    }
-                }
+                $this->message($entityConfig, $object, $data);
             }
         }
     }
@@ -153,6 +165,36 @@ class RedisTransport implements RedisTransportInterface
                     if (count($objects) > 0) {
                         foreach ($objects as $object) {
                             $this->save($entityConfig, $object);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * @param string $dateTime
+     */
+    public function restoreMessages(string $dateTime)
+    {
+        $entitiesConfig = $this->getEntitiesConfig();
+        $createdAt = DateTime::createFromFormat('Y-m-d H:i:s', $dateTime);
+
+        if (count($entitiesConfig) > 0) {
+            foreach ($entitiesConfig as $class => $entityConfig) {
+                if ($entityConfig['message']) {
+                    /** @var ServiceEntityRepository $repository */
+                    $repository = $this->doctrine->getRepository($class);
+
+                    $objects = $repository->createQueryBuilder('qb')
+                        ->where('qb.createdAt >= :createdAt')
+                        ->setParameter('createdAt', $createdAt)
+                        ->getQuery()
+                        ->getResult();
+
+                    if (count($objects) > 0) {
+                        foreach ($objects as $object) {
+                            $this->message($entityConfig, $object);
                         }
                     }
                 }

@@ -15,4 +15,9 @@ interface RedisTransportInterface
     public function processEntity(object $object);
 
     public function restoreData();
+
+    /**
+     * @param string $dateTime
+     */
+    public function restoreMessages(string $dateTime);
 }
