@@ -59,4 +59,14 @@ interface RedisClientInterface
      * @return mixed
      */
     public function expire(string $key, int $seconds);
+
+    /**
+     * @param string $key
+     * @param int $seconds
+     * @param $data
+     * @param bool $serialize
+     * @param string[]|null $serializeGroups
+     * @return mixed
+     */
+    public function setex(string $key, int $seconds, $data, bool $serialize = true, array $serializeGroups = null);
 }
