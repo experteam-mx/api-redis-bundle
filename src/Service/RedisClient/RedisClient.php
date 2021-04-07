@@ -122,4 +122,18 @@ class RedisClient implements RedisClientInterface
     {
         $this->predisClient->expire($key, $seconds);
     }
+
+    /**
+     * @param string $key
+     * @param int $seconds
+     * @param $data
+     * @param bool $serialize
+     * @param string[]|null $serializeGroups
+     */
+    public function setex(string $key, int $seconds, $data, bool $serialize = true, array $serializeGroups = null)
+    {
+        $serializeGroups = !is_null($serializeGroups) ? ['groups' => $serializeGroups] : [];
+        $data = $serialize ? $this->serializer->serialize($data, 'json', $serializeGroups) : $data;
+        $this->predisClient->setex($key, $seconds, $data);
+    }
 }
