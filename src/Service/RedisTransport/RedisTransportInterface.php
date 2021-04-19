@@ -21,6 +21,7 @@ interface RedisTransportInterface
 
     /**
      * @param string $dateTime
+     * @param array $entities
      */
-    public function restoreMessages(string $dateTime);
+    public function restoreMessages(string $dateTime, array $entities = []);
 }

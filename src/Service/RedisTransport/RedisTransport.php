@@ -177,14 +177,18 @@ class RedisTransport implements RedisTransportInterface
 
     /**
      * @param string $dateTime
+     * @param array $entities
      */
-    public function restoreMessages(string $dateTime)
+    public function restoreMessages(string $dateTime, array $entities = [])
     {
         $entitiesConfig = $this->getEntitiesConfig();
         $createdAt = DateTime::createFromFormat('Y-m-d H:i:s', $dateTime);
 
         if (count($entitiesConfig) > 0) {
             foreach ($entitiesConfig as $class => $entityConfig) {
+                if (count($entities) > 0 && !in_array($class, $entities))
+                    continue;
+
                 if ($entityConfig['message']) {
                     /** @var ServiceEntityRepository $repository */
                     $repository = $this->entityManager->getRepository($class);
