@@ -153,12 +153,15 @@ class RedisTransport implements RedisTransportInterface
         }
     }
 
-    public function restoreData()
+    public function restoreData(array $entities = [])
     {
         $entitiesConfig = $this->getEntitiesConfig();
 
         if (count($entitiesConfig) > 0) {
             foreach ($entitiesConfig as $class => $entityConfig) {
+                if (count($entities) > 0 && !in_array($class, $entities))
+                    continue;
+
                 if ($entityConfig['save']) {
                     $objects = $this->entityManager->getRepository($class)->findAll();
 
