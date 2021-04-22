@@ -24,4 +24,12 @@ abstract class Message
     {
         return $this->data;
     }
+
+    /**
+     * @return array
+     */
+    public function getConditions(): array
+    {
+        return [];
+    }
 }

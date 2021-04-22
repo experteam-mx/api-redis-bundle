@@ -115,7 +115,19 @@ class RedisTransport implements RedisTransportInterface
                 $data = $this->serializeWithCircularRefHandler($object, [$entityConfig['serialize_groups']['message']]);
             }
 
-            $this->messageBus->dispatch(new $messageClass($data));
+            $dispatchMessage = true;
+            $message = new $messageClass($data);
+
+            foreach ($message->getConditions() as $key => $value) {
+                if (method_exists($object, $key) && $object->$key() !== $value) {
+                    $dispatchMessage = false;
+                    break;
+                }
+            }
+
+            if ($dispatchMessage) {
+                $this->messageBus->dispatch($message);
+            }
 
             if ($entityConfig['elk_logger']['message']) {
                 $this->elkLogger->infoLog("{$entityConfig['prefix']}_message", ['data' => $data]);
