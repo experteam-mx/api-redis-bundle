@@ -69,4 +69,9 @@ interface RedisClientInterface
      * @return mixed
      */
     public function setex(string $key, int $seconds, $data, bool $serialize = true, array $serializeGroups = null);
+
+    /**
+     * @param array|string $keys
+     */
+    public function del($keys);
 }

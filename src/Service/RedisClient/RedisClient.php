@@ -136,4 +136,12 @@ class RedisClient implements RedisClientInterface
         $data = $serialize ? $this->serializer->serialize($data, 'json', $serializeGroups) : $data;
         $this->predisClient->setex($key, $seconds, $data);
     }
+
+    /**
+     * @param array|string $keys
+     */
+    public function del($keys)
+    {
+        $this->predisClient->del($keys);
+    }
 }

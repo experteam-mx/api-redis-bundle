@@ -170,11 +170,15 @@ class RedisTransport implements RedisTransportInterface
         $entitiesConfig = $this->getEntitiesConfig();
 
         if (count($entitiesConfig) > 0) {
+            $appPrefix = $this->parameterBag->get('app.prefix');
+
             foreach ($entitiesConfig as $class => $entityConfig) {
-                if (count($entities) > 0 && !in_array($class, $entities))
+                if (count($entities) > 0 && !in_array($class, $entities)) {
                     continue;
+                }
 
                 if ($entityConfig['save']) {
+                    $this->redisClient->del("{$appPrefix}.{$entityConfig['prefix']}");
                     $objects = $this->entityManager->getRepository($class)->findAll();
 
                     if (count($objects) > 0) {
