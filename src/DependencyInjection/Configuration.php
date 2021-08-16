@@ -16,6 +16,13 @@ class Configuration implements ConfigurationInterface
 
         $rootNode
             ->children()
+                ->arrayNode('timezone')
+                    ->children()
+                        ->scalarNode('key')->isRequired()->end()
+                        ->scalarNode('field')->isRequired()->end()
+                        ->scalarNode('id')->isRequired()->end()
+                    ->end()
+                ->end()
                 ->arrayNode('serialize_groups')
                     ->addDefaultsIfNotSet()
                     ->children()

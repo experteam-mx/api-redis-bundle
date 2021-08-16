@@ -25,6 +25,13 @@ class ExperteamApiRedisExtension extends Extension
         }, $config['entities'] ?? []);
 
         $container->setParameter('experteam_api_redis.entities', $configEntities);
+
+        if ($container->hasParameter('experteam_api_base.timezone') && isset($config['timezone'])) {
+            $container->setParameter('experteam_api_base.timezone', array_merge(
+                $container->getParameter('experteam_api_base.timezone'),
+                ['redis' => $config['timezone']]
+            ));
+        }
     }
 
 }
