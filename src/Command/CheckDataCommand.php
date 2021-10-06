@@ -66,6 +66,9 @@ class CheckDataCommand extends Command
 
         $entitiesToRestore = [];
         foreach ($cfgEntities as $class => $config) {
+            if (!$config['save'])
+                continue;
+
             $key = "$appPrefix.{$config['prefix']}";
             $missing = empty($this->redisClient->keys($key));
 
