@@ -192,13 +192,16 @@ class RedisTransport implements RedisTransportInterface
     }
 
     /**
-     * @param string $dateTime
+     * @param string $dateFrom
+     * @param string|null $dateTo
      * @param array $entities
+     * @param array $ids
      */
-    public function restoreMessages(string $dateTime, array $entities = [])
+    public function restoreMessages(string $dateFrom, string $dateTo = null, array $entities = [], array $ids = [])
     {
         $entitiesConfig = $this->getEntitiesConfig();
-        $createdAt = DateTime::createFromFormat('Y-m-d H:i:s', $dateTime);
+        $createdAtFrom = DateTime::createFromFormat('Y-m-d H:i:s', $dateFrom);
+        $createdAtTo = DateTime::createFromFormat('Y-m-d H:i:s', $dateTo);
 
         if (count($entitiesConfig) > 0) {
             foreach ($entitiesConfig as $class => $entityConfig) {
@@ -209,11 +212,19 @@ class RedisTransport implements RedisTransportInterface
                     /** @var ServiceEntityRepository $repository */
                     $repository = $this->entityManager->getRepository($class);
 
-                    $objects = $repository->createQueryBuilder('qb')
-                        ->where('qb.createdAt >= :createdAt')
-                        ->setParameter('createdAt', $createdAt)
-                        ->getQuery()
-                        ->getResult();
+                    $qb = $repository->createQueryBuilder('qb')
+                        ->where('qb.createdAt >= :createdAtFrom')
+                        ->setParameter('createdAtFrom', $createdAtFrom);
+
+                    if ($createdAtTo)
+                        $qb->andWhere('qb.createdAt <= :createdAtTo')
+                            ->setParameter('createdAtTo', $createdAtTo);
+
+                    if (count($ids) > 0 && method_exists($class, 'getId'))
+                        $qb->andWhere('qb.id in (:ids)')
+                            ->setParameter('ids', $ids);
+
+                    $objects = $qb->getQuery()->getResult();
 
                     if (count($objects) > 0) {
                         foreach ($objects as $object) {
