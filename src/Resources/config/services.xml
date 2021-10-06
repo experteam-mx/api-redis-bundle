@@ -21,5 +21,13 @@
         <service id="Experteam\ApiRedisBundle\Service\RedisTransport\RedisTransportInterface" alias="api_redis.transport" />
 
         <service id="Predis\Client" alias="snc_redis.default" />
+
+        <service id="api_redis.check_data_command" class="Experteam\ApiRedisBundle\Command\CheckDataCommand">
+            <argument key="$parameterBag" type="service" id="Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface"/>
+            <argument key="$redisClient" type="service" id="Experteam\ApiRedisBundle\Service\RedisClient\RedisClientInterface"/>
+            <argument key="$redisTransport" type="service" id="Experteam\ApiRedisBundle\Service\RedisTransport\RedisTransportInterface"/>
+            <argument key="$logger" type="service" id="Psr\Log\LoggerInterface"/>
+            <tag name="console.command" command="experteam:redis:check:data" />
+        </service>
     </services>
 </container>
