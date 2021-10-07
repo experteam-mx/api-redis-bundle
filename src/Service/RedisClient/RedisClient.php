@@ -152,4 +152,13 @@ class RedisClient implements RedisClientInterface
     {
         return $this->predisClient->keys($pattern);
     }
+
+    /**
+     * @param string $key
+     * @param array $fields
+     */
+    public function hdel(string $key, array $fields)
+    {
+        $this->predisClient->hdel($key, $fields);
+    }
 }

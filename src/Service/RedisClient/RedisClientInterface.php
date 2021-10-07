@@ -79,4 +79,10 @@ interface RedisClientInterface
      * @param string|null $pattern
      */
     public function keys(string $pattern = null);
+
+    /**
+     * @param string $key
+     * @param array $fields
+     */
+    public function hdel(string $key, array $fields);
 }
