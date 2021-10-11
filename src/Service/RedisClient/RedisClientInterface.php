@@ -85,4 +85,10 @@ interface RedisClientInterface
      * @param array $fields
      */
     public function hdel(string $key, array $fields);
+
+    /**
+     * @param string $key
+     * @return int
+     */
+    public function incr(string $key);
 }

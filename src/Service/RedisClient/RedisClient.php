@@ -161,4 +161,13 @@ class RedisClient implements RedisClientInterface
     {
         $this->predisClient->hdel($key, $fields);
     }
+
+    /**
+     * @param string $key
+     * @return int
+     */
+    public function incr(string $key)
+    {
+        return $this->predisClient->incr($key);
+    }
 }
