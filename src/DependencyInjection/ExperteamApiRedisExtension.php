@@ -18,13 +18,20 @@ class ExperteamApiRedisExtension extends Extension
         $config = (new Processor())->processConfiguration(new Configuration(), $configs);
         $serializeGroups = $config['serialize_groups'];
         $logger = $config['elk_logger'];
+
         $configEntities = array_map(function($cfg) use($serializeGroups, $logger) {
             $cfg['serialize_groups'] = $cfg['serialize_groups'] ?? $serializeGroups;
             $cfg['elk_logger'] = $cfg['elk_logger'] ?? $logger;
             return $cfg;
         }, $config['entities'] ?? []);
-
         $container->setParameter('experteam_api_redis.entities', $configEntities);
+
+        $configEntitiesV2 = array_map(function($cfg) use($serializeGroups, $logger) {
+            $cfg['serialize_groups'] = $cfg['serialize_groups'] ?? $serializeGroups;
+            $cfg['elk_logger'] = $cfg['elk_logger'] ?? $logger;
+            return $cfg;
+        }, $config['entities_v2'] ?? []);
+        $container->setParameter('experteam_api_redis.entities.v2', $configEntitiesV2);
 
         if ($container->hasParameter('experteam_api_base.timezone') && isset($config['timezone'])) {
             $container->setParameter('experteam_api_base.timezone', array_merge(

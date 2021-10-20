@@ -29,5 +29,15 @@
             <argument key="$logger" type="service" id="Psr\Log\LoggerInterface"/>
             <tag name="console.command" command="experteam:redis:check:data" />
         </service>
+
+        <service id="api_redis.transport.v2" class="Experteam\ApiRedisBundle\Service\RedisTransportV2\RedisTransportV2" public="true">
+            <argument key="$parameterBag" type="service" id="Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface"/>
+            <argument key="$entityManager" type="service" id="Doctrine\ORM\EntityManagerInterface"/>
+            <argument key="$redisClient" type="service" id="Experteam\ApiRedisBundle\Service\RedisClient\RedisClientInterface"/>
+            <argument key="$serializer" type="service" id="Symfony\Component\Serializer\SerializerInterface"/>
+            <argument key="$messageBus" type="service" id="Symfony\Component\Messenger\MessageBusInterface"/>
+            <argument key="$elkLogger" type="service" id="Experteam\ApiBaseBundle\Service\ELKLogger\ELKLoggerInterface"/>
+        </service>
+        <service id="Experteam\ApiRedisBundle\Service\RedisTransportV2\RedisTransportV2Interface" alias="api_redis.transport.v2" />
     </services>
 </container>
