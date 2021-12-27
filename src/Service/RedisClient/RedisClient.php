@@ -170,4 +170,16 @@ class RedisClient implements RedisClientInterface
     {
         return $this->predisClient->incr($key);
     }
+
+    /**
+     * @param string $commandID
+     * @param array $arguments
+     * @return array [error, message]
+     */
+    public function command(string $commandID, array $arguments = []): array
+    {
+        $result = $this->predisClient->executeRaw(array_merge([$commandID], $arguments), $error);
+
+        return [$error, $result];
+    }
 }

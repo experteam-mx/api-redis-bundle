@@ -136,6 +136,28 @@ class RedisTransportV2 implements RedisTransportV2Interface
     }
 
     /**
+     * @param array $entityConfig
+     * @param object $object
+     */
+    protected function streamCompute(array $entityConfig, object $object)
+    {
+        $appPrefix = $this->parameterBag->get('app.prefix');
+        $data = $this->serializeWithCircularRefHandler($object, [$entityConfig['serialize_groups']['stream_compute']]);
+
+        $arguments = ["streamCompute.$appPrefix.{$entityConfig['prefix']}", '*', 'message', $data];
+        [$error, $message] = $this->redisClient->command('XADD', $arguments);
+
+        if ($error)
+            $this->elkLogger->errorLog("Error send message to stream compute", [
+                'message' => $message,
+                'arguments' => $arguments
+            ]);
+
+        if ($entityConfig['elk_logger']['stream_compute'])
+            $this->elkLogger->infoLog("{$entityConfig['prefix']}_stream_compute", ['data' => $data]);
+    }
+
+    /**
      * @return array
      */
     public function getEntitiesConfig(): array
@@ -162,6 +184,10 @@ class RedisTransportV2 implements RedisTransportV2Interface
 
             if ($entityConfig['message']) {
                 $this->message($entityConfig, $object);
+            }
+
+            if ($entityConfig['stream_compute']) {
+                $this->streamCompute($entityConfig, $object);
             }
         }
     }

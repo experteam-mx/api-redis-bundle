@@ -91,4 +91,11 @@ interface RedisClientInterface
      * @return int
      */
     public function incr(string $key);
+
+    /**
+     * @param string $commandID
+     * @param array $arguments
+     * @return array [error, message]
+     */
+    public function command(string $commandID, array $arguments = []): array;
 }
