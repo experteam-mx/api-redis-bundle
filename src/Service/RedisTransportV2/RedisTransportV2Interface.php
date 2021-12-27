@@ -26,4 +26,13 @@ interface RedisTransportV2Interface
      * @param array $ids
      */
     public function restoreMessages(string $dateFrom, string $dateTo = null, array $entities = [], array $ids = []);
+
+    /**
+     * @param string|null $dateFrom
+     * @param string|null $dateTo
+     * @param array $entities
+     * @param array $ids
+     * @return void
+     */
+    public function restoreStreamCompute(string $dateFrom = null, string $dateTo = null, array $entities = [], array $ids = []);
 }

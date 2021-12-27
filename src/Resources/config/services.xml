@@ -30,6 +30,11 @@
             <tag name="console.command" command="experteam:redis:check:data" />
         </service>
 
+        <service id="api_redis.refresh_command" class="Experteam\ApiRedisBundle\Command\RefreshCommand">
+            <argument key="$redisTransport" type="service" id="Experteam\ApiRedisBundle\Service\RedisTransportV2\RedisTransportV2Interface"/>
+            <tag name="console.command" command="experteam:redis:refresh" />
+        </service>
+
         <service id="api_redis.transport.v2" class="Experteam\ApiRedisBundle\Service\RedisTransportV2\RedisTransportV2" public="true">
             <argument key="$parameterBag" type="service" id="Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface"/>
             <argument key="$entityManager" type="service" id="Doctrine\ORM\EntityManagerInterface"/>

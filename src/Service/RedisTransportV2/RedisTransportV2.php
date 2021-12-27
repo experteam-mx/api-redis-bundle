@@ -5,6 +5,7 @@ namespace Experteam\ApiRedisBundle\Service\RedisTransportV2;
 use DateTime;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\QueryBuilder;
 use Experteam\ApiBaseBundle\Service\ELKLogger\ELKLoggerInterface;
 use Experteam\ApiRedisBundle\Service\RedisClient\RedisClientInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
@@ -243,21 +244,8 @@ class RedisTransportV2 implements RedisTransportV2Interface
                 continue;
 
             if ($entityConfig['message']) {
-                /** @var ServiceEntityRepository $repository */
-                $repository = $this->entityManager->getRepository($class);
 
-                $qb = $repository->createQueryBuilder('qb')
-                    ->where('qb.createdAt >= :createdAtFrom')
-                    ->setParameter('createdAtFrom', $createdAtFrom);
-
-                if ($createdAtTo)
-                    $qb->andWhere('qb.createdAt <= :createdAtTo')
-                        ->setParameter('createdAtTo', $createdAtTo);
-
-                if (count($ids) > 0 && method_exists($class, 'getId'))
-                    $qb->andWhere('qb.id in (:ids)')
-                        ->setParameter('ids', $ids);
-
+                $qb = $this->getQueryBuilderToRestore($class, $createdAtFrom, $createdAtTo, $ids);
                 $objects = $qb->getQuery()->getResult();
 
                 if (count($objects) > 0) {
@@ -267,5 +255,65 @@ class RedisTransportV2 implements RedisTransportV2Interface
                 }
             }
         }
+    }
+
+    /**
+     * @param string|null $dateFrom
+     * @param string|null $dateTo
+     * @param array $entities
+     * @param array $ids
+     * @return void
+     */
+    public function restoreStreamCompute(string $dateFrom = null, string $dateTo = null, array $entities = [], array $ids = [])
+    {
+        $entitiesConfig = $this->getEntitiesConfig();
+        $createdAtFrom = DateTime::createFromFormat('Y-m-d H:i:s', $dateFrom);
+        $createdAtTo = DateTime::createFromFormat('Y-m-d H:i:s', $dateTo);
+
+        if (empty($entitiesConfig))
+            return;
+
+        foreach ($entitiesConfig as $entityConfig) {
+            $class = $entityConfig['class'];
+
+            if (count($entities) > 0 && !in_array($class, $entities))
+                continue;
+
+            if ($entityConfig['stream_compute']) {
+
+                $qb = $this->getQueryBuilderToRestore($class, $createdAtFrom, $createdAtTo, $ids);
+
+                foreach ($qb->getQuery()->toIterable() as $object)
+                    $this->streamCompute($entityConfig, $object);
+            }
+        }
+    }
+
+    /**
+     * @param string $class
+     * @param $createdAtFrom
+     * @param $createdAtTo
+     * @param array $ids
+     * @return QueryBuilder
+     */
+    protected function getQueryBuilderToRestore(string $class, $createdAtFrom, $createdAtTo, array $ids = [])
+    {
+        /** @var ServiceEntityRepository $repository */
+        $repository = $this->entityManager->getRepository($class);
+        $qb = $repository->createQueryBuilder('qb');
+
+        if ($createdAtFrom instanceof DateTime)
+            $qb->where('qb.createdAt >= :createdAtFrom')
+                ->setParameter('createdAtFrom', $createdAtFrom);
+
+        if ($createdAtTo instanceof DateTime)
+            $qb->andWhere('qb.createdAt <= :createdAtTo')
+                ->setParameter('createdAtTo', $createdAtTo);
+
+        if (count($ids) > 0 && method_exists($class, 'getId'))
+            $qb->andWhere('qb.id in (:ids)')
+                ->setParameter('ids', $ids);
+
+        return $qb;
     }
 }
