@@ -66,14 +66,16 @@ class RedisTransportV2 implements RedisTransportV2Interface
     /**
      * @param $object
      * @param array|null $groups
+     * @param bool $withTranslations
      * @return string
      */
-    protected function serializeWithCircularRefHandler($object, array $groups = null): string
+    protected function serializeWithCircularRefHandler($object, array $groups = null, bool $withTranslations = false): string
     {
         $context = [
             'circular_reference_handler' => function ($object) {
                 return (method_exists($object, 'getId') ? $object->getId() : null);
-            }
+            },
+            'with_translations' => $withTranslations
         ];
 
         if (!is_null($groups)) {
@@ -93,7 +95,11 @@ class RedisTransportV2 implements RedisTransportV2Interface
 
         if (method_exists($object, $method)) {
             $appPrefix = $this->parameterBag->get('app.prefix');
-            $data = $this->serializeWithCircularRefHandler($object, [$entityConfig['serialize_groups']['save']]);
+            $data = $this->serializeWithCircularRefHandler(
+                $object,
+                [$entityConfig['serialize_groups']['save']],
+                $entityConfig['with_translations']['save'] ?? false
+            );
             $this->redisClient->hset("$appPrefix.{$entityConfig['prefix']}", $object->$method(), $data, false);
 
             if ($entityConfig['elk_logger']['save']) {
@@ -113,7 +119,11 @@ class RedisTransportV2 implements RedisTransportV2Interface
 
         if (class_exists($messageClass)) {
             if (is_null($data) || $entityConfig['serialize_groups']['message'] != $entityConfig['serialize_groups']['save']) {
-                $data = $this->serializeWithCircularRefHandler($object, [$entityConfig['serialize_groups']['message']]);
+                $data = $this->serializeWithCircularRefHandler(
+                    $object,
+                    [$entityConfig['serialize_groups']['message']],
+                    $entityConfig['with_translations']['message'] ?? false
+                );
             }
 
             $dispatchMessage = true;
@@ -143,7 +153,11 @@ class RedisTransportV2 implements RedisTransportV2Interface
     protected function streamCompute(array $entityConfig, object $object)
     {
         $appPrefix = $this->parameterBag->get('app.prefix');
-        $data = $this->serializeWithCircularRefHandler($object, [$entityConfig['serialize_groups']['stream_compute']]);
+        $data = $this->serializeWithCircularRefHandler(
+            $object,
+            [$entityConfig['serialize_groups']['stream_compute']],
+            $entityConfig['with_translations']['stream_compute'] ?? false
+        );
 
         $arguments = ["streamCompute.$appPrefix.{$entityConfig['prefix']}", '*', 'message', $data];
         [$error, $message] = $this->redisClient->command('XADD', $arguments);

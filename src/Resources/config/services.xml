@@ -44,5 +44,11 @@
             <argument key="$elkLogger" type="service" id="Experteam\ApiBaseBundle\Service\ELKLogger\ELKLoggerInterface"/>
         </service>
         <service id="Experteam\ApiRedisBundle\Service\RedisTransportV2\RedisTransportV2Interface" alias="api_redis.transport.v2" />
+
+        <service id="api_redis.translatable.normalizer" class="Experteam\ApiRedisBundle\Serializer\TranslatableNormalizer">
+            <argument key="$normalizer" type="service" id="Symfony\Component\Serializer\Normalizer\ObjectNormalizer"/>
+            <argument key="$manager" type="service" id="Doctrine\ORM\EntityManagerInterface"/>
+            <tag name="serializer.normalizer" />
+        </service>
     </services>
 </container>

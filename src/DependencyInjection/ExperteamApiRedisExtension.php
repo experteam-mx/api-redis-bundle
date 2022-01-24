@@ -18,6 +18,7 @@ class ExperteamApiRedisExtension extends Extension
         $config = (new Processor())->processConfiguration(new Configuration(), $configs);
         $serializeGroups = $config['serialize_groups'];
         $logger = $config['elk_logger'];
+        $withTranslations = $config['with_translations'];
 
         $configEntities = array_map(function($cfg) use($serializeGroups, $logger) {
             $cfg['serialize_groups'] = $cfg['serialize_groups'] ?? $serializeGroups;
@@ -26,9 +27,10 @@ class ExperteamApiRedisExtension extends Extension
         }, $config['entities'] ?? []);
         $container->setParameter('experteam_api_redis.entities', $configEntities);
 
-        $configEntitiesV2 = array_map(function($cfg) use($serializeGroups, $logger) {
+        $configEntitiesV2 = array_map(function($cfg) use($serializeGroups, $logger, $withTranslations) {
             $cfg['serialize_groups'] = $cfg['serialize_groups'] ?? $serializeGroups;
             $cfg['elk_logger'] = $cfg['elk_logger'] ?? $logger;
+            $cfg['with_translations'] = $cfg['with_translations'] ?? $withTranslations;
             return $cfg;
         }, $config['entities_v2'] ?? []);
         $container->setParameter('experteam_api_redis.entities.v2', $configEntitiesV2);
