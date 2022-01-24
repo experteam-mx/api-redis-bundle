@@ -36,6 +36,6 @@ class TranslatableNormalizer implements ContextAwareNormalizerInterface
 
     public function supportsNormalization($data, string $format = null, array $context = []): bool
     {
-        return $data instanceof Translatable && $context['with_translations'] ?? false;
+        return $data instanceof Translatable && ($context['with_translations'] ?? false);
     }
 }
