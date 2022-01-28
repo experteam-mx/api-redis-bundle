@@ -10,12 +10,12 @@ use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
 class TranslatableNormalizer implements ContextAwareNormalizerInterface
 {
     /**
-     * @var ObjectNormalizer 
+     * @var ObjectNormalizer
      */
     private $normalizer;
 
     /**
-     * @var TranslationRepository 
+     * @var TranslationRepository
      */
     private $repository;
 
@@ -29,7 +29,14 @@ class TranslatableNormalizer implements ContextAwareNormalizerInterface
     {
         $data = $this->normalizer->normalize($object, $format, $context);
 
-        $data['translations'] = $this->repository->findTranslations($object);
+        $translations = [];
+        foreach ($this->repository->findTranslations($object) as $locale => $translation)
+            foreach ($translation as $field => $value) {
+                $translations[$field] = $translations[$field] ?? [];
+                $translations[$field][strtoupper($locale)] = $value;
+            }
+
+        $data['translations'] = $translations;
 
         return $data;
     }
