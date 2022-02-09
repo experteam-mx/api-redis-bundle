@@ -15,29 +15,30 @@ class TranslatableNormalizer implements ContextAwareNormalizerInterface
     private $normalizer;
 
     /**
-     * @var TranslationRepository
+     * @var EntityManagerInterface
      */
-    private $repository;
+    private $manager;
 
     public function __construct(ObjectNormalizer $normalizer, EntityManagerInterface $manager)
     {
         $this->normalizer = $normalizer;
-        $this->repository = $manager->getRepository('Gedmo\Translatable\Entity\Translation');
+        $this->manager = $manager;
     }
 
     public function normalize($object, string $format = null, array $context = [])
     {
-        $data = $this->normalizer->normalize($object, $format, $context);
-
         $translations = [];
-        foreach ($this->repository->findTranslations($object) as $locale => $translation)
+        $data = $this->normalizer->normalize($object, $format, $context);
+        $repository = $this->manager->getRepository('Gedmo\Translatable\Entity\Translation');
+
+        foreach ($repository->findTranslations($object) as $locale => $translation) {
             foreach ($translation as $field => $value) {
-                $translations[$field] = $translations[$field] ?? [];
+                $translations[$field] = ($translations[$field] ?? []);
                 $translations[$field][strtoupper($locale)] = $value;
             }
+        }
 
         $data['translations'] = $translations;
-
         return $data;
     }
 
