@@ -94,13 +94,16 @@ class RedisTransportV2 implements RedisTransportV2Interface
         $method = $entityConfig['save_method'];
 
         if (method_exists($object, $method)) {
+            $suffixMethod = $entityConfig['save_suffix_method'] ?? null;
+            $suffix = !empty($suffixMethod) && method_exists($object, $suffixMethod) ? $object->$suffixMethod() : '';
+
             $appPrefix = $this->parameterBag->get('app.prefix');
             $data = $this->serializeWithCircularRefHandler(
                 $object,
                 [$entityConfig['serialize_groups']['save']],
                 $entityConfig['with_translations']['save'] ?? false
             );
-            $this->redisClient->hset("$appPrefix.{$entityConfig['prefix']}", $object->$method(), $data, false);
+            $this->redisClient->hset("$appPrefix.{$entityConfig['prefix']}$suffix", $object->$method(), $data, false);
 
             if ($entityConfig['elk_logger']['save']) {
                 $this->elkLogger->infoLog("{$entityConfig['prefix']}_save_redis", ['data' => $data]);

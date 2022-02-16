@@ -78,6 +78,7 @@ class Configuration implements ConfigurationInterface
                             ->scalarNode('prefix')->isRequired()->end()
                             ->booleanNode('save')->isRequired()->end()
                             ->scalarNode('save_method')->defaultValue('getId')->end()
+                            ->scalarNode('save_suffix_method')->end()
                             ->booleanNode('stream_compute')->defaultValue(false)->end()
                             ->booleanNode('message')->isRequired()->end()
                             ->scalarNode('message_class')->defaultValue('')->end()
