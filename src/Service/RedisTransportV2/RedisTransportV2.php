@@ -227,9 +227,13 @@ class RedisTransportV2 implements RedisTransportV2Interface
             }
 
             if ($entityConfig['save']) {
-                $this->redisClient->del("$appPrefix.{$entityConfig['prefix']}");
-                $objects = $this->entityManager->getRepository($class)->findAll();
+                $keys = $this->redisClient->keys("$appPrefix.{$entityConfig['prefix']}"
+                    . (!is_null($entityConfig['save_suffix_method'] ?? null) ? '*' : ''));
+                if (!empty($keys)) {
+                    $this->redisClient->del($keys);
+                }
 
+                $objects = $this->entityManager->getRepository($class)->findAll();
                 if (count($objects) > 0) {
                     foreach ($objects as $object) {
                         $this->save($entityConfig, $object);
