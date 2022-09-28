@@ -1,6 +1,6 @@
 <?php
 
-namespace Experteam\ApiRedisBundle\Message;
+namespace Experteam\ApiRedisBundle\MessageSerializer;
 
 use Exception;
 use Symfony\Component\Messenger\Envelope;
@@ -31,20 +31,30 @@ abstract class MessageSerializer implements SerializerInterface
     }
 
     /**
+     * @param string|null $messageClass
+     * @throws Exception
+     */
+    private function validateMessageClass(?string $messageClass)
+    {
+        if (empty($messageClass)) {
+            throw new Exception(sprintf('Empty message class. Please redefine the getMessageClass function in %s', get_class($this)));
+        }
+
+        if (!class_exists($messageClass)) {
+            throw new Exception(sprintf('Message class "%s" does not exist', $messageClass));
+        }
+    }
+
+    /**
      * @param array $encodedEnvelope
      * @return Envelope
      * @throws Exception
      */
     public function decode(array $encodedEnvelope): Envelope
     {
-        $data = [];
         $messageClass = $this->getMessageClass();
-
-        if (empty($messageClass))
-            throw new Exception(sprintf('Empty message class. Please redefine the getMessageClass function in %s', get_class($this)));
-
-        if (!class_exists($messageClass))
-            throw new Exception(sprintf('Message class "%s" does not exist', $messageClass));
+        $this->validateMessageClass($messageClass);
+        $data = [];
 
         if (isset($encodedEnvelope['body'])) {
             $body = $this->decoder->decode($encodedEnvelope['body'], 'json');
@@ -65,13 +75,7 @@ abstract class MessageSerializer implements SerializerInterface
     public function encode(Envelope $envelope): array
     {
         $messageClass = $this->getMessageClass();
-
-        if (empty($messageClass))
-            throw new Exception(sprintf('Empty message class. Please redefine the getMessageClass function in %s', get_class($this)));
-
-        if (!class_exists($messageClass))
-            throw new Exception(sprintf('Message class "%s" does not exist', $messageClass));
-
+        $this->validateMessageClass($messageClass);
         $body = '';
         $message = $envelope->getMessage();
 
