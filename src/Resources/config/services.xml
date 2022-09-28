@@ -50,5 +50,10 @@
             <argument key="$manager" type="service" id="Doctrine\ORM\EntityManagerInterface"/>
             <tag name="serializer.normalizer" />
         </service>
+
+        <service id="Experteam\ApiRedisBundle\MessageSerializer\FailedMessageSerializer">
+            <argument key="$decoder" type="service" id="Symfony\Component\Serializer\Encoder\DecoderInterface"/>
+            <argument key="$encoder" type="service" id="Symfony\Component\Serializer\Encoder\EncoderInterface"/>
+        </service>
     </services>
 </container>
