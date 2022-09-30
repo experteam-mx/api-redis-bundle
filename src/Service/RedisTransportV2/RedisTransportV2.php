@@ -267,13 +267,9 @@ class RedisTransportV2 implements RedisTransportV2Interface
             if ($entityConfig['message']) {
 
                 $qb = $this->getQueryBuilderToRestore($class, $createdAtFrom, $createdAtTo, $ids);
-                $objects = $qb->getQuery()->getResult();
 
-                if (count($objects) > 0) {
-                    foreach ($objects as $object) {
-                        $this->message($entityConfig, $object);
-                    }
-                }
+                foreach ($qb->getQuery()->toIterable() as $object)
+                    $this->message($entityConfig, $object);
             }
         }
     }
@@ -317,7 +313,7 @@ class RedisTransportV2 implements RedisTransportV2Interface
      * @param array $ids
      * @return QueryBuilder
      */
-    protected function getQueryBuilderToRestore(string $class, $createdAtFrom, $createdAtTo, array $ids = [])
+    protected function getQueryBuilderToRestore(string $class, $createdAtFrom, $createdAtTo, array $ids = []): QueryBuilder
     {
         /** @var ServiceEntityRepository $repository */
         $repository = $this->entityManager->getRepository($class);
