@@ -2,15 +2,15 @@
 
 namespace Experteam\ApiRedisBundle\Service\RedisClient;
 
-use Predis\Client;
+use Redis;
 use Symfony\Component\Serializer\SerializerInterface;
 
 class RedisClient implements RedisClientInterface
 {
     /**
-     * @var Client
+     * @var Redis
      */
-    private $predisClient;
+    private $redis;
 
     /**
      * @var SerializerInterface
@@ -18,12 +18,12 @@ class RedisClient implements RedisClientInterface
     private $serializer;
 
     /**
-     * @param Client $predisClient
+     * @param Redis $redis
      * @param SerializerInterface $serializer
      */
-    public function __construct(Client $predisClient, SerializerInterface $serializer)
+    public function __construct(Redis $redis, SerializerInterface $serializer)
     {
-        $this->predisClient = $predisClient;
+        $this->redis = $redis;
         $this->serializer = $serializer;
     }
 
@@ -54,7 +54,7 @@ class RedisClient implements RedisClientInterface
     {
         $serializeGroups = !is_null($serializeGroups) ? ['groups' => $serializeGroups] : [];
         $data = $serialize ? $this->serializer->serialize($data, 'json', $serializeGroups) : $data;
-        $this->predisClient->set($key, $data);
+        $this->redis->set($key, $data);
     }
 
     /**
@@ -65,7 +65,7 @@ class RedisClient implements RedisClientInterface
      */
     public function get(string $key, $objectType = null, $assoc = false)
     {
-        $value = $this->predisClient->get($key);
+        $value = $this->redis->get($key);
         return (is_null($value) ? null : $this->deserialize($value, $objectType, $assoc));
     }
 
@@ -80,7 +80,7 @@ class RedisClient implements RedisClientInterface
     {
         $serializeGroups = !is_null($serializeGroups) ? ['groups' => $serializeGroups] : [];
         $data = $serialize ? $this->serializer->serialize($data, 'json', $serializeGroups) : $data;
-        $this->predisClient->hset($key, $field, $data);
+        $this->redis->hSet($key, $field, $data);
     }
 
     /**
@@ -92,7 +92,7 @@ class RedisClient implements RedisClientInterface
      */
     public function hget(string $key, $field, $objectType = null, $assoc = false)
     {
-        $value = $this->predisClient->hget($key, $field);
+        $value = $this->redis->hGet($key, $field);
         return (is_null($value) ? null : $this->deserialize($value, $objectType, $assoc));
     }
 
@@ -102,7 +102,7 @@ class RedisClient implements RedisClientInterface
      */
     public function hmset(string $key, array $data)
     {
-        $this->predisClient->hmset($key, $data);
+        $this->redis->hMSet($key, $data);
     }
 
     /**
@@ -111,7 +111,7 @@ class RedisClient implements RedisClientInterface
      */
     public function hgetall(string $key)
     {
-        return $this->predisClient->hgetall($key);
+        return $this->redis->hGetAll($key);
     }
 
     /**
@@ -120,7 +120,7 @@ class RedisClient implements RedisClientInterface
      */
     public function expire(string $key, int $seconds)
     {
-        $this->predisClient->expire($key, $seconds);
+        $this->redis->expire($key, $seconds);
     }
 
     /**
@@ -134,7 +134,7 @@ class RedisClient implements RedisClientInterface
     {
         $serializeGroups = !is_null($serializeGroups) ? ['groups' => $serializeGroups] : [];
         $data = $serialize ? $this->serializer->serialize($data, 'json', $serializeGroups) : $data;
-        $this->predisClient->setex($key, $seconds, $data);
+        $this->redis->setex($key, $seconds, $data);
     }
 
     /**
@@ -142,15 +142,16 @@ class RedisClient implements RedisClientInterface
      */
     public function del($keys)
     {
-        $this->predisClient->del($keys);
+        $this->redis->del($keys);
     }
 
     /**
      * @param string|null $pattern
+     * @return array
      */
     public function keys(string $pattern = null)
     {
-        return $this->predisClient->keys($pattern);
+        return $this->redis->keys($pattern);
     }
 
     /**
@@ -159,7 +160,9 @@ class RedisClient implements RedisClientInterface
      */
     public function hdel(string $key, array $fields)
     {
-        $this->predisClient->hdel($key, $fields);
+        foreach ($fields as $field) {
+            $this->redis->hDel($key, $field);
+        }
     }
 
     /**
@@ -168,7 +171,7 @@ class RedisClient implements RedisClientInterface
      */
     public function incr(string $key)
     {
-        return $this->predisClient->incr($key);
+        return $this->redis->incr($key);
     }
 
     /**
@@ -178,8 +181,8 @@ class RedisClient implements RedisClientInterface
      */
     public function command(string $commandID, array $arguments = []): array
     {
-        $result = $this->predisClient->executeRaw(array_merge([$commandID], $arguments), $error);
-
+        $result = $this->redis->rawCommand($commandID, $arguments);
+        $error = !is_null($this->redis->getLastError());
         return [$error, $result];
     }
 }
