@@ -3,7 +3,9 @@
 namespace Experteam\ApiRedisBundle\Service\RedisClient;
 
 use Redis;
+use ReflectionMethod;
 use Symfony\Component\Serializer\SerializerInterface;
+use Throwable;
 
 class RedisClient implements RedisClientInterface
 {
@@ -181,8 +183,15 @@ class RedisClient implements RedisClientInterface
      */
     public function command(string $commandID, array $arguments = []): array
     {
-        $result = $this->redis->rawCommand($commandID, $arguments);
-        $error = !is_null($this->redis->getLastError());
-        return [$error, $result];
+        try {
+            $reflectionMethod = new ReflectionMethod(get_class($this->redis), 'rawCommand');
+            array_unshift($arguments, $commandID);
+            $result = $reflectionMethod->invokeArgs($this->redis, $arguments);
+            $lastError = $this->redis->getLastError();
+            $error = !is_null($lastError);
+            return [$error, ($error ? $lastError : $result)];
+        } catch (Throwable $t) {
+            return [true, $t->getMessage()];
+        }
     }
 }
