@@ -98,4 +98,10 @@ interface RedisClientInterface
      * @return array [error, message]
      */
     public function command(string $commandID, array $arguments = []): array;
+
+    /**
+     * @param string $key
+     * @return int
+     */
+    public function exists(string $key): int;
 }
