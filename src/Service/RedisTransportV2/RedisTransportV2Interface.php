@@ -16,8 +16,9 @@ interface RedisTransportV2Interface
 
     /**
      * @param array $entities
+     * @return array|null
      */
-    public function restoreData(array $entities = []);
+    public function restoreData(array $entities = []): ?array;
 
     /**
      * @param string $dateFrom

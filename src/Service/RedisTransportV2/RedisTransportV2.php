@@ -191,7 +191,7 @@ class RedisTransportV2 implements RedisTransportV2Interface
         $class = get_class($object);
         $entitiesConfig = $this->getEntitiesConfig();
 
-        $entityConfigs = array_filter($entitiesConfig, function($cfg) use ($class) {
+        $entityConfigs = array_filter($entitiesConfig, function ($cfg) use ($class) {
             return $cfg['class'] == $class;
         });
 
@@ -210,13 +210,19 @@ class RedisTransportV2 implements RedisTransportV2Interface
         }
     }
 
-    public function restoreData(array $entities = [])
+    /**
+     * @param array $entities
+     * @return array|null
+     */
+    public function restoreData(array $entities = []): ?array
     {
         $entitiesConfig = $this->getEntitiesConfig();
 
-        if (empty($entitiesConfig))
-            return;
+        if (empty($entitiesConfig)) {
+            return null;
+        }
 
+        $keysNotGenerated = [];
         $appPrefix = $this->parameterBag->get('app.prefix');
 
         foreach ($entitiesConfig as $entityConfig) {
@@ -227,20 +233,29 @@ class RedisTransportV2 implements RedisTransportV2Interface
             }
 
             if ($entityConfig['save']) {
-                $keys = $this->redisClient->keys("$appPrefix.{$entityConfig['prefix']}"
-                    . (!is_null($entityConfig['save_suffix_method'] ?? null) ? '*' : ''));
+                $key = "$appPrefix.{$entityConfig['prefix']}";
+                $isNullSaveSuffixMethod = is_null(($entityConfig['save_suffix_method'] ?? null));
+                $keys = $this->redisClient->keys($key . (!$isNullSaveSuffixMethod ? '*' : ''));
+
                 if (!empty($keys)) {
                     $this->redisClient->del($keys);
                 }
 
                 $objects = $this->entityManager->getRepository($class)->findAll();
+
                 if (count($objects) > 0) {
                     foreach ($objects as $object) {
                         $this->save($entityConfig, $object);
                     }
                 }
+
+                if ($isNullSaveSuffixMethod && $this->redisClient->exists($key) === 0) {
+                    $keysNotGenerated[] = $key;
+                }
             }
         }
+
+        return (empty($keysNotGenerated) ? null : $keysNotGenerated);
     }
 
     /**
