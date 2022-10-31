@@ -25,6 +25,12 @@ class TranslatableNormalizer implements ContextAwareNormalizerInterface
         $this->manager = $manager;
     }
 
+    /**
+     * @param $object
+     * @param string|null $format
+     * @param array $context
+     * @return mixed
+     */
     public function normalize($object, string $format = null, array $context = [])
     {
         $translations = [];
