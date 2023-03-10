@@ -33,15 +33,26 @@ class TranslatableNormalizer implements ContextAwareNormalizerInterface
      */
     public function normalize($object, string $format = null, array $context = [])
     {
-        $translations = [];
         $data = $this->normalizer->normalize($object, $format, $context);
-        $repository = $this->manager->getRepository('Gedmo\Translatable\Entity\Translation');
 
-        foreach ($repository->findTranslations($object) as $locale => $translation) {
-            foreach ($translation as $field => $value) {
-                $translations[$field] = ($translations[$field] ?? []);
-                $translations[$field][strtoupper($locale)] = $value;
+        $config = [];
+        if (method_exists($object, 'getTranslations')) {
+            foreach ($object->getTranslations() as $translation) {
+                $config[] = [$translation->getField(), $translation->getLocale(), $translation->getContent()];
             }
+        } else {
+            $repository = $this->manager->getRepository('Gedmo\Translatable\Entity\Translation');
+            foreach ($repository->findTranslations($object) as $locale => $translation) {
+                foreach ($translation as $field => $value) {
+                    $config[] = [$field, $locale, $value];
+                }
+            }
+        }
+
+        $translations = [];
+        foreach ($config as [$field, $locale, $value]) {
+            $translations[$field] = ($translations[$field] ?? []);
+            $translations[$field][strtoupper($locale)] = $value;
         }
 
         $data['translations'] = $translations;
