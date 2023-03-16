@@ -4,22 +4,28 @@ namespace Experteam\ApiRedisBundle\Serializer;
 
 use Doctrine\ORM\EntityManagerInterface;
 use Gedmo\Translatable\Translatable;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\Serializer\Normalizer\ContextAwareNormalizerInterface;
+use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
 
 class TranslatableNormalizer implements ContextAwareNormalizerInterface
 {
     /**
-     * @var ObjectNormalizer
+     * @var NormalizerInterface
      */
-    private $normalizer;
+    private NormalizerInterface $normalizer;
 
     /**
      * @var EntityManagerInterface
      */
-    private $manager;
+    private EntityManagerInterface $manager;
 
-    public function __construct(ObjectNormalizer $normalizer, EntityManagerInterface $manager)
+    public function __construct(
+        #[Autowire(service: ObjectNormalizer::class)]
+        NormalizerInterface    $normalizer,
+        EntityManagerInterface $manager
+    )
     {
         $this->normalizer = $normalizer;
         $this->manager = $manager;
