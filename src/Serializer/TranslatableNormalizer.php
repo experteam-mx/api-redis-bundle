@@ -5,11 +5,10 @@ namespace Experteam\ApiRedisBundle\Serializer;
 use Doctrine\ORM\EntityManagerInterface;
 use Gedmo\Translatable\Translatable;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
-use Symfony\Component\Serializer\Normalizer\ContextAwareNormalizerInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
 
-class TranslatableNormalizer implements ContextAwareNormalizerInterface
+class TranslatableNormalizer implements NormalizerInterface
 {
     /**
      * @var NormalizerInterface
@@ -40,14 +39,15 @@ class TranslatableNormalizer implements ContextAwareNormalizerInterface
     public function normalize($object, string $format = null, array $context = [])
     {
         $data = $this->normalizer->normalize($object, $format, $context);
-
         $config = [];
+
         if (method_exists($object, 'getTranslations')) {
             foreach ($object->getTranslations() as $translation) {
                 $config[] = [$translation->getField(), $translation->getLocale(), $translation->getContent()];
             }
         } else {
             $repository = $this->manager->getRepository('Gedmo\Translatable\Entity\Translation');
+
             foreach ($repository->findTranslations($object) as $locale => $translation) {
                 foreach ($translation as $field => $value) {
                     $config[] = [$field, $locale, $value];
@@ -56,6 +56,7 @@ class TranslatableNormalizer implements ContextAwareNormalizerInterface
         }
 
         $translations = [];
+
         foreach ($config as [$field, $locale, $value]) {
             $translations[$field] = ($translations[$field] ?? []);
             $translations[$field][strtoupper($locale)] = $value;
@@ -67,6 +68,6 @@ class TranslatableNormalizer implements ContextAwareNormalizerInterface
 
     public function supportsNormalization($data, string $format = null, array $context = []): bool
     {
-        return $data instanceof Translatable && ($context['with_translations'] ?? false);
+        return ($data instanceof Translatable && ($context['with_translations'] ?? false));
     }
 }
