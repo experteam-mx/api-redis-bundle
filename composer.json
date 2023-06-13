@@ -16,12 +16,19 @@
         "ext-redis": "*",
         "doctrine/orm": "^2.0",
         "doctrine/doctrine-bundle": "^2.0",
-        "symfony/dependency-injection": "6.2.*",
-        "symfony/http-kernel": "6.2.*",
-        "symfony/serializer": "6.2.*",
-        "symfony/messenger": "6.2.*",
+        "symfony/dependency-injection": "6.3.*",
+        "symfony/http-kernel": "6.3.*",
+        "symfony/serializer": "6.3.*",
+        "symfony/messenger": "6.3.*",
         "snc/redis-bundle": "^4.3",
         "experteam/api-base-bundle": "^3.0"
+    },
+    "require-dev": {
+        "symfony/flex": "^1.11",
+        "symfony/dotenv": "6.3.*",
+        "symfony/phpunit-bridge": "6.3.*",
+        "symfony/config": "6.3.*",
+        "symfony/property-access": "6.3.*"
     },
     "autoload": {
         "psr-4": {
@@ -32,13 +39,6 @@
         "psr-4": {
             "Experteam\\ApiRedisBundle\\Tests\\": "tests/"
         }
-    },
-    "require-dev": {
-        "symfony/flex": "^1.11",
-        "symfony/dotenv": "6.2.*",
-        "symfony/phpunit-bridge": "6.2.*",
-        "symfony/config": "6.2.*",
-        "symfony/property-access": "6.2.*"
     },
     "scripts": {
         "auto-scripts": {
