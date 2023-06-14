@@ -5,6 +5,7 @@ namespace Experteam\ApiRedisBundle\Serializer;
 use Doctrine\ORM\EntityManagerInterface;
 use Gedmo\Translatable\Translatable;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
+use Symfony\Component\Serializer\Exception\ExceptionInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
 
@@ -35,8 +36,9 @@ class TranslatableNormalizer implements NormalizerInterface
      * @param string|null $format
      * @param array $context
      * @return mixed
+     * @throws ExceptionInterface
      */
-    public function normalize($object, string $format = null, array $context = [])
+    public function normalize($object, string $format = null, array $context = []): mixed
     {
         $data = $this->normalizer->normalize($object, $format, $context);
         $config = [];
@@ -69,5 +71,12 @@ class TranslatableNormalizer implements NormalizerInterface
     public function supportsNormalization($data, string $format = null, array $context = []): bool
     {
         return ($data instanceof Translatable && ($context['with_translations'] ?? false));
+    }
+
+    public function getSupportedTypes(?string $format): array
+    {
+        return [
+            '*' => true
+        ];
     }
 }

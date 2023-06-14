@@ -16,12 +16,13 @@
         "ext-redis": "*",
         "doctrine/orm": "^2.0",
         "doctrine/doctrine-bundle": "^2.0",
+        "experteam/api-base-bundle": "^3.0",
+        "stof/doctrine-extensions-bundle": "^1.6",
         "symfony/dependency-injection": "6.3.*",
         "symfony/http-kernel": "6.3.*",
         "symfony/serializer": "6.3.*",
         "symfony/messenger": "6.3.*",
-        "snc/redis-bundle": "^4.3",
-        "experteam/api-base-bundle": "^3.0"
+        "snc/redis-bundle": "^4.3"
     },
     "require-dev": {
         "symfony/flex": "^1.11",
