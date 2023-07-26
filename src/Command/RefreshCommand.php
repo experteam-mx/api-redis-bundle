@@ -50,10 +50,11 @@ class RefreshCommand extends Command
         $ids = $input->getOption('id');
 
         $namespace = "App\\Entity\\";
+        $entities = $input->getOption('entity');
 
-        $entities = array_map(function (&$entity) use ($namespace) {
-            return strpos($entity, $namespace) === false ? $namespace . $entity : $entity;
-        }, $input->getOption('entity'));
+        foreach ($entities as &$entity) {
+            $entity = (!str_starts_with($entity, $namespace) ? $namespace . $entity : $entity);
+        }
 
         if ($input->getOption('save')) {
             $ui->text("<info>> Refreshing data structures...</info>");
