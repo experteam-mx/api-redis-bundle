@@ -105,6 +105,7 @@ class Configuration implements ConfigurationInterface
                             ->end()
                         ->end()
                     ->end()
+                    ->performNoDeepMerging()->end()
                 ->end()
             ->end();
 
