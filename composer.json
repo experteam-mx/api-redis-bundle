@@ -14,22 +14,22 @@
         "php": ">=8.1",
         "ext-json": "*",
         "ext-redis": "*",
-        "doctrine/orm": "^2.0",
-        "doctrine/doctrine-bundle": "^2.0",
-        "experteam/api-base-bundle": "^3.0",
+        "doctrine/orm": "^2.14",
+        "doctrine/doctrine-bundle": "^2.8",
+        "experteam/api-base-bundle": "^3.3.0",
         "stof/doctrine-extensions-bundle": "^1.6",
-        "symfony/dependency-injection": "6.3.*",
-        "symfony/http-kernel": "6.3.*",
-        "symfony/serializer": "6.3.*",
-        "symfony/messenger": "6.3.*",
+        "symfony/dependency-injection": "6.4.*",
+        "symfony/http-kernel": "6.4.*",
+        "symfony/serializer": "6.4.*",
+        "symfony/messenger": "6.4.*",
         "snc/redis-bundle": "^4.3"
     },
     "require-dev": {
-        "symfony/flex": "^1.11",
-        "symfony/dotenv": "6.3.*",
-        "symfony/phpunit-bridge": "6.3.*",
-        "symfony/config": "6.3.*",
-        "symfony/property-access": "6.3.*"
+        "symfony/flex": "^2",
+        "symfony/dotenv": "6.4.*",
+        "symfony/phpunit-bridge": "6.4.*",
+        "symfony/config": "6.4.*",
+        "symfony/property-access": "6.4.*"
     },
     "autoload": {
         "psr-4": {
