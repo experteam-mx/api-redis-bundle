@@ -4,6 +4,7 @@ namespace Experteam\ApiRedisBundle\Service\RedisTransportV2;
 
 use DateTime;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\Common\Util\ClassUtils;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\QueryBuilder;
 use Experteam\ApiBaseBundle\Service\ELKLogger\ELKLoggerInterface;
@@ -188,7 +189,7 @@ class RedisTransportV2 implements RedisTransportV2Interface
      */
     public function processEntity(object $object)
     {
-        $class = get_class($object);
+        $class = ClassUtils::getClass($object);
         $entitiesConfig = $this->getEntitiesConfig();
 
         $entityConfigs = array_filter($entitiesConfig, function ($cfg) use ($class) {
