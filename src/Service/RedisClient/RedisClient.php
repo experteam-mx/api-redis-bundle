@@ -68,7 +68,7 @@ class RedisClient implements RedisClientInterface
     public function get(string $key, $objectType = null, $assoc = false)
     {
         $value = $this->redis->get($key);
-        return (($value === false) ? null : $this->deserialize($value, $objectType, $assoc));
+        return ((is_null($value) || $value === false) ? null : $this->deserialize($value, $objectType, $assoc));
     }
 
     /**
@@ -95,7 +95,7 @@ class RedisClient implements RedisClientInterface
     public function hget(string $key, $field, $objectType = null, $assoc = false)
     {
         $value = $this->redis->hGet($key, strval($field));
-        return (($value === false) ? null : $this->deserialize($value, $objectType, $assoc));
+        return ((is_null($value) || $value === false) ? null : $this->deserialize($value, $objectType, $assoc));
     }
 
     /**
