@@ -52,5 +52,11 @@
             <argument key="$decoder" type="service" id="Symfony\Component\Serializer\Encoder\DecoderInterface"/>
             <argument key="$encoder" type="service" id="Symfony\Component\Serializer\Encoder\EncoderInterface"/>
         </service>
+
+        <service id="Experteam\ApiRedisBundle\MessageHandler\SendEntityToRedisMessageHandler">
+            <argument key="$entityManager" type="service" id="Doctrine\ORM\EntityManagerInterface"/>
+            <argument key="$redisTransportV2" type="service" id="Experteam\ApiRedisBundle\Service\RedisTransportV2\RedisTransportV2Interface"/>
+            <tag name="messenger.message_handler" handles="Experteam\ApiRedisBundle\Message\SendEntityToRedisMessage"/>
+        </service>
     </services>
 </container>
