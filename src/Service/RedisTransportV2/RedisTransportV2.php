@@ -138,11 +138,11 @@ class RedisTransportV2 implements RedisTransportV2Interface
 
     public function restoreData(array $entities = []): ?array
     {
+        $areEntitiesEmpty = empty($entities);
         $appPrefix = $this->parameterBag->get('app.prefix');
-        $keys = $this->redisClient->keys("$appPrefix.*");
 
-        if (!empty($keys)) {
-            $this->redisClient->del($keys);
+        if ($areEntitiesEmpty) {
+            $this->deleteRedisKeys("$appPrefix.*");
         }
 
         $entitiesConfig = $this->getEntitiesConfig();
@@ -156,11 +156,18 @@ class RedisTransportV2 implements RedisTransportV2Interface
         foreach ($entitiesConfig as $entityConfig) {
             $class = $entityConfig['class'];
 
-            if (count($entities) > 0 && !in_array($class, $entities)) {
+            if (!$areEntitiesEmpty && !in_array($class, $entities)) {
                 continue;
             }
 
             if ($entityConfig['save']) {
+                $key = "$appPrefix.{$entityConfig['prefix']}";
+                $isNullSaveSuffixMethod = is_null(($entityConfig['save_suffix_method'] ?? null));
+
+                if (!$areEntitiesEmpty) {
+                    $this->deleteRedisKeys($key . (!$isNullSaveSuffixMethod ? '*' : ''));
+                }
+
                 $objects = $this->entityManager->getRepository($class)->findAll();
 
                 if (count($objects) > 0) {
@@ -169,15 +176,22 @@ class RedisTransportV2 implements RedisTransportV2Interface
                     }
                 }
 
-                $key = "$appPrefix.{$entityConfig['prefix']}";
-
-                if (is_null(($entityConfig['save_suffix_method'] ?? null)) && $this->redisClient->exists($key) === 0) {
+                if ($isNullSaveSuffixMethod && $this->redisClient->exists($key) === 0) {
                     $keysNotGenerated[] = $key;
                 }
             }
         }
 
         return (empty($keysNotGenerated) ? null : $keysNotGenerated);
+    }
+
+    private function deleteRedisKeys(string $pattern): void
+    {
+        $keys = $this->redisClient->keys($pattern);
+
+        if (!empty($keys)) {
+            $this->redisClient->del($keys);
+        }
     }
 
     public function restoreMessages(string $dateFrom, ?string $dateTo = null, array $entities = [], array $ids = []): void
