@@ -58,5 +58,9 @@
             <argument key="$redisTransportV2" type="service" id="Experteam\ApiRedisBundle\Service\RedisTransportV2\RedisTransportV2Interface"/>
             <tag name="messenger.message_handler" handles="Experteam\ApiRedisBundle\Message\SendEntityToRedisMessage"/>
         </service>
+
+        <service id="Experteam\ApiRedisBundle\Validator\RedisForeignFieldValidator">
+            <argument key="$redisClient" type="service" id="Experteam\ApiRedisBundle\Service\RedisClient\RedisClientInterface"/>
+        </service>
     </services>
 </container>
