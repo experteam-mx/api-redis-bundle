@@ -116,7 +116,7 @@ class RedisTransportV2 implements RedisTransportV2Interface
         }
     }
 
-    protected function streamCompute(array $entityConfig, object $object): void
+    public function streamCompute(array $entityConfig, object $object): void
     {
         $appPrefix = $this->parameterBag->get('app.prefix');
         $data = $this->serializeWithCircularRefHandler($object, [$entityConfig['serialize_groups']['stream_compute']], ($entityConfig['with_translations']['stream_compute'] ?? false));
