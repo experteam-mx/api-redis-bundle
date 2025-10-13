@@ -10,20 +10,14 @@ use Throwable;
 class RedisClient implements RedisClientInterface
 {
     /**
-     * @var Redis
-     */
-    private $redis;
-
-    /**
-     * @var SerializerInterface
-     */
-    private $serializer;
-
-    /**
      * @param Redis $redis
+     * @param Redis $redisStreamCompute
      * @param SerializerInterface $serializer
      */
-    public function __construct(Redis $redis, SerializerInterface $serializer)
+    public function __construct(
+        private Redis $redis,
+        private Redis $redisStreamCompute,
+        private SerializerInterface $serializer)
     {
         $this->redis = $redis;
         $this->serializer = $serializer;
@@ -181,13 +175,14 @@ class RedisClient implements RedisClientInterface
      * @param array $arguments
      * @return array [error, message]
      */
-    public function command(string $commandID, array $arguments = []): array
+    public function command(string $commandID, array $arguments = [], bool $isStreamCompute = false): array
     {
         try {
-            $reflectionMethod = new ReflectionMethod(get_class($this->redis), 'rawCommand');
+            $redis = $isStreamCompute ? $this->redisStreamCompute : $this->redis;
+            $reflectionMethod = new ReflectionMethod(get_class($redis), 'rawCommand');
             array_unshift($arguments, $commandID);
-            $result = $reflectionMethod->invokeArgs($this->redis, $arguments);
-            $lastError = $this->redis->getLastError();
+            $result = $reflectionMethod->invokeArgs($redis, $arguments);
+            $lastError = $redis->getLastError();
             $error = !is_null($lastError);
             return [$error, ($error ? $lastError : $result)];
         } catch (Throwable $t) {

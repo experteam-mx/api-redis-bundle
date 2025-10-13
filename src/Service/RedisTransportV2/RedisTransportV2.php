@@ -121,7 +121,7 @@ class RedisTransportV2 implements RedisTransportV2Interface
         $appPrefix = $this->parameterBag->get('app.prefix');
         $data = $this->serializeWithCircularRefHandler($object, [$entityConfig['serialize_groups']['stream_compute']], ($entityConfig['with_translations']['stream_compute'] ?? false));
         $arguments = ["streamCompute.$appPrefix.{$entityConfig['prefix']}", '*', 'message', $data];
-        [$error, $message] = $this->redisClient->command('XADD', $arguments);
+        [$error, $message] = $this->redisClient->command('XADD', $arguments, true);
 
         if ($error) {
             $this->elkLogger->errorLog("Error send message to stream compute", [
