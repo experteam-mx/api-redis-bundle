@@ -9,18 +9,12 @@ use Throwable;
 
 class RedisClient implements RedisClientInterface
 {
-    /**
-     * @param Redis $redis
-     * @param Redis $redisStreamCompute
-     * @param SerializerInterface $serializer
-     */
     public function __construct(
-        private Redis $redis,
-        private Redis $redisStreamCompute,
-        private SerializerInterface $serializer)
+        private readonly Redis               $redis,
+        private readonly Redis               $redisStreamCompute,
+        private readonly SerializerInterface $serializer
+    )
     {
-        $this->redis = $redis;
-        $this->serializer = $serializer;
     }
 
     /**
