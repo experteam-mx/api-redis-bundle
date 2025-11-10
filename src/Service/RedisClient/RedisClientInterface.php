@@ -97,7 +97,7 @@ interface RedisClientInterface
      * @param array $arguments
      * @return array [error, message]
      */
-    public function command(string $commandID, array $arguments = []): array;
+    public function command(string $commandID, array $arguments = [], bool $isStreamCompute = false): array;
 
     /**
      * @param string $key
