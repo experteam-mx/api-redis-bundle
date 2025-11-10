@@ -3,6 +3,7 @@
     <services>
         <service id="api_redis.client" class="Experteam\ApiRedisBundle\Service\RedisClient\RedisClient" public="true">
             <argument key="$redis" type="service" id="Redis"/>
+            <argument key="$redisStreamCompute" type="service" id="Redis"/>
             <argument key="$serializer" type="service" id="Symfony\Component\Serializer\SerializerInterface"/>
         </service>
         <service id="Experteam\ApiRedisBundle\Service\RedisClient\RedisClientInterface" alias="api_redis.client"/>
