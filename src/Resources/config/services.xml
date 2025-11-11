@@ -2,8 +2,8 @@
 <container xmlns="http://symfony.com/schema/dic/services" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
     <services>
         <service id="api_redis.client" class="Experteam\ApiRedisBundle\Service\RedisClient\RedisClient" public="true">
-            <argument key="$redis" type="service" id="Redis"/>
-            <argument key="$redisStreamCompute" type="service" id="Redis"/>
+            <argument key="$redis" type="service" id="snc_redis.default"/>
+            <argument key="$redisStreamCompute" type="service" id="snc_redis.redis_stream_compute"/>
             <argument key="$serializer" type="service" id="Symfony\Component\Serializer\SerializerInterface"/>
         </service>
         <service id="Experteam\ApiRedisBundle\Service\RedisClient\RedisClientInterface" alias="api_redis.client"/>
