@@ -34,6 +34,11 @@
             <tag name="console.command" command="experteam:redis:refresh"/>
         </service>
 
+        <service id="api_redis.ping_command" class="Experteam\ApiRedisBundle\Command\RedisPingCommand">
+            <argument key="$redisClient" type="service" id="Experteam\ApiRedisBundle\Service\RedisClient\RedisClientInterface"/>
+            <tag name="console.command" command="experteam:redis:ping"/>
+        </service>
+
         <service id="api_redis.transport.v2" class="Experteam\ApiRedisBundle\Service\RedisTransportV2\RedisTransportV2" public="true">
             <argument key="$parameterBag" type="service" id="Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface"/>
             <argument key="$entityManager" type="service" id="Doctrine\ORM\EntityManagerInterface"/>
@@ -64,6 +69,10 @@
         <service id="Experteam\ApiRedisBundle\Validator\RedisForeignFieldValidator">
             <argument key="$redisClient" type="service" id="Experteam\ApiRedisBundle\Service\RedisClient\RedisClientInterface"/>
             <tag name="validator.constraint_validator"/>
+        </service>
+
+        <service id="Experteam\ApiRedisBundle\EnvVar\RedisEnvVarProcessor">
+            <tag name="container.env_var_processor"/>
         </service>
     </services>
 </container>
